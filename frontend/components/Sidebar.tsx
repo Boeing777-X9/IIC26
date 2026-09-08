@@ -7,7 +7,7 @@ import {
   Eye, LayoutDashboard, UserPlus, Users, History, Send, BarChart2,
   Settings, LogOut, Stethoscope, ClipboardList, ChevronRight, Shield, SwitchCamera
 } from "lucide-react";
-import { getActiveWorker, getWorkers, setActiveWorker, Worker } from "@/lib/store";
+import { getActiveWorker, getWorkers, setActiveWorker, Worker, DEFAULT_WORKER } from "@/lib/store";
 
 type Role = "worker" | "doctor";
 
@@ -44,7 +44,7 @@ interface Props {
 export default function Sidebar({ role }: Props) {
   const router = useRouter();
   const pathname = usePathname();
-  const [activeWorker, setActiveWorkerState] = useState<Worker>(getActiveWorker());
+  const [activeWorker, setActiveWorkerState] = useState<Worker>(DEFAULT_WORKER);
   const [allWorkers, setAllWorkers] = useState<Worker[]>([]);
   const [showSwitchWorker, setShowSwitchWorker] = useState(false);
 

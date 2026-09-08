@@ -107,7 +107,7 @@ function saveLocal<T>(key: string, data: T): void {
 }
 
 // ================= Active Worker State =================
-const DEFAULT_WORKER: Worker = {
+export const DEFAULT_WORKER: Worker = {
   id: "HW-101",
   name: "Priya Venkat",
   email: "priya.venkat@health.gov.in",

@@ -30,7 +30,8 @@ const DEFAULT_PERMISSIONS: WorkerPermissions = {
 };
 
 export default function WorkersManagement() {
-  const [workers, setWorkers] = useState<Worker[]>(getWorkers());
+  const [mounted, setMounted] = useState(false);
+  const [workers, setWorkers] = useState<Worker[]>([]);
   const [dbStatus, setDbStatus] = useState<{ engine: string; connected: boolean; database: string; message: string }>({
     engine: "loading...",
     connected: false,
@@ -55,6 +56,8 @@ export default function WorkersManagement() {
   const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null);
 
   useEffect(() => {
+    setMounted(true);
+    setWorkers(getWorkers());
     fetchWorkersApi().then(setWorkers);
     fetchDbStatusApi().then(setDbStatus);
   }, []);

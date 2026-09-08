@@ -24,8 +24,9 @@ import {
 
 export default function DoctorDashboard() {
   const navigate = useNavigate();
-  const [referrals, setReferrals] = useState<Referral[]>(getReferrals());
-  const [workers, setWorkers] = useState<Worker[]>(getWorkers());
+  const [mounted, setMounted] = useState(false);
+  const [referrals, setReferrals] = useState<Referral[]>([]);
+  const [workers, setWorkers] = useState<Worker[]>([]);
   const [patients, setPatients] = useState<any[]>([]);
   const [dbStatus, setDbStatus] = useState({
     engine: "loading...",
@@ -35,6 +36,9 @@ export default function DoctorDashboard() {
   });
 
   useEffect(() => {
+    setMounted(true);
+    setReferrals(getReferrals());
+    setWorkers(getWorkers());
     fetchReferralsApi().then(setReferrals);
     fetchPatientsApi().then(setPatients);
     fetchWorkersApi().then(setWorkers);
@@ -65,7 +69,7 @@ export default function DoctorDashboard() {
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-slate-900 text-sm">Real Clinical Database Active</span>
                   <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-mono font-medium">
-                    {dbStatus.engine.toUpperCase()}: {dbStatus.database}
+                    {mounted ? `${dbStatus.engine.toUpperCase()}: ${dbStatus.database}` : "MONGODB: retinagrid"}
                   </span>
                 </div>
                 <p className="text-xs text-slate-500 mt-0.5">
@@ -78,15 +82,15 @@ export default function DoctorDashboard() {
               onClick={() => navigate("/doctor/workers")}
               className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3.5 py-2 rounded-xl transition-colors shrink-0"
             >
-              <Shield size={13} /> Manage Healthcare Workers ({workers.length})
+              <Shield size={13} /> Manage Healthcare Workers {mounted && workers.length > 0 ? `(${workers.length})` : ""}
             </button>
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <StatCard label="Cases awaiting review" value={awaiting} icon={<ClipboardList size={18} />} accent="amber" />
-            <StatCard label="Priority cases" value={highPriority} icon={<AlertCircle size={18} />} accent="red" />
-            <StatCard label="Urgent cases" value={urgent} icon={<Clock size={18} />} accent="amber" />
-            <StatCard label="Recently reviewed" value={reviewed} icon={<CheckCircle2 size={18} />} accent="teal" />
+            <StatCard label="Cases awaiting review" value={mounted ? awaiting : 0} icon={<ClipboardList size={18} />} accent="amber" />
+            <StatCard label="Priority cases" value={mounted ? highPriority : 0} icon={<AlertCircle size={18} />} accent="red" />
+            <StatCard label="Urgent cases" value={mounted ? urgent : 0} icon={<Clock size={18} />} accent="amber" />
+            <StatCard label="Recently reviewed" value={mounted ? reviewed : 0} icon={<CheckCircle2 size={18} />} accent="teal" />
           </div>
 
           {/* Cases requiring attention */}

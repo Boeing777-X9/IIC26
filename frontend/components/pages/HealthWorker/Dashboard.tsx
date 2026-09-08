@@ -11,7 +11,7 @@ import Topbar from "@/components/Topbar";
 import StatCard from "@/components/StatCard";
 import RiskBadge from "@/components/RiskBadge";
 import {
-  getScreenings, getPatient, getReferrals, getActiveWorker,
+  getScreenings, getPatient, getReferrals, getActiveWorker, DEFAULT_WORKER,
   fetchScreeningsApi, fetchReferralsApi, fetchPatientsApi,
   Screening, Referral, Worker
 } from "@/lib/store";
@@ -33,13 +33,17 @@ function ReferralStatusBadge({ status }: { status: string | null | undefined }) 
 
 export default function WorkerDashboard() {
   const navigate = useNavigate();
-  const [activeWorker, setActiveWorkerState] = useState<Worker>(getActiveWorker());
-  const [screenings, setScreenings] = useState<Screening[]>(getScreenings());
-  const [referrals, setReferrals] = useState<Referral[]>(getReferrals());
+  const [mounted, setMounted] = useState(false);
+  const [activeWorker, setActiveWorkerState] = useState<Worker>(DEFAULT_WORKER);
+  const [screenings, setScreenings] = useState<Screening[]>([]);
+  const [referrals, setReferrals] = useState<Referral[]>([]);
   const [patients, setPatients] = useState<any[]>([]);
 
   useEffect(() => {
+    setMounted(true);
     setActiveWorkerState(getActiveWorker());
+    setScreenings(getScreenings());
+    setReferrals(getReferrals());
     fetchScreeningsApi().then(setScreenings);
     fetchReferralsApi().then(setReferrals);
     fetchPatientsApi().then(setPatients);
@@ -110,10 +114,10 @@ export default function WorkerDashboard() {
 
           {/* Stats */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <StatCard label="Screenings today" value={todayCount} icon={<Eye size={18} />} sub="Recorded in database" accent="teal" />
-            <StatCard label="Requiring referral" value={referralCount} icon={<Send size={18} />} sub="Active referrals" accent="amber" />
-            <StatCard label="High-risk cases" value={highRisk} icon={<AlertCircle size={18} />} sub="Needs specialist" accent="red" />
-            <StatCard label="Pending reviews" value={pending} icon={<Clock size={18} />} sub="In doctor queue" accent="slate" />
+            <StatCard label="Screenings today" value={mounted ? todayCount : 0} icon={<Eye size={18} />} sub="Recorded in database" accent="teal" />
+            <StatCard label="Requiring referral" value={mounted ? referralCount : 0} icon={<Send size={18} />} sub="Active referrals" accent="amber" />
+            <StatCard label="High-risk cases" value={mounted ? highRisk : 0} icon={<AlertCircle size={18} />} sub="Needs specialist" accent="red" />
+            <StatCard label="Pending reviews" value={mounted ? pending : 0} icon={<Clock size={18} />} sub="In doctor queue" accent="slate" />
           </div>
 
           {/* Recent Screenings Table */}

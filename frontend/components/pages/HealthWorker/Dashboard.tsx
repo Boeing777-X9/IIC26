@@ -11,7 +11,9 @@ import Topbar from "@/components/Topbar";
 import StatCard from "@/components/StatCard";
 import RiskBadge from "@/components/RiskBadge";
 import RetinalImage from "@/components/RetinalImage";
-import { SpotlightCard, ShinyText } from "@/components/reactbits";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   getScreenings, getPatient, getReferrals, getActiveWorker, DEFAULT_WORKER,
   fetchScreeningsApi, fetchReferralsApi, fetchPatientsApi,
@@ -58,7 +60,7 @@ export default function WorkerDashboard() {
   const perms = activeWorker.permissions || {};
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: "#f0fdf8" }}>
+    <div className="flex h-screen overflow-hidden" style={{ background: "#f8fafc" }}>
       <Sidebar role="worker" />
       <div className="flex flex-col flex-1 overflow-hidden">
         <Topbar
@@ -68,11 +70,8 @@ export default function WorkerDashboard() {
         />
         <main className="flex-1 overflow-y-auto p-6 space-y-5">
 
-          {/* Active Worker Permissions Badge Card with SpotlightCard */}
-          <SpotlightCard
-            spotlightColor="rgba(16, 185, 129, 0.2)"
-            className="bg-white/95 border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-          >
+          {/* Active Worker Permissions Badge Card */}
+          <Card className="bg-white border-slate-200/80 rounded-2xl p-4 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-sm shrink-0 border border-emerald-100 shadow-xs">
                 {activeWorker.name.split(" ").map(n => n[0]).join("")}
@@ -81,9 +80,9 @@ export default function WorkerDashboard() {
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-slate-900 text-sm">{activeWorker.name}</span>
                   <span className="text-[11px] font-mono text-slate-400 font-medium">({activeWorker.id})</span>
-                  <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-medium">
+                  <Badge variant="emerald" className="text-[10px] py-0 px-2">
                     {activeWorker.role_title}
-                  </span>
+                  </Badge>
                 </div>
                 <div className="flex items-center gap-2 mt-1 text-xs text-slate-500 flex-wrap">
                   <span className="font-medium text-slate-700">{activeWorker.clinic}</span>
@@ -92,10 +91,10 @@ export default function WorkerDashboard() {
                     <Shield size={11} className="text-emerald-600" />
                     Permissions:
                   </span>
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${perms.can_screen ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"}`}>
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${perms.can_screen ? "bg-emerald-50 text-emerald-700 border border-emerald-100" : "bg-red-50 text-red-600"}`}>
                     {perms.can_screen ? "✓ Screen" : "✗ Screen"}
                   </span>
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${perms.can_refer ? "bg-blue-50 text-blue-700" : "bg-red-50 text-red-600"}`}>
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${perms.can_refer ? "bg-blue-50 text-blue-700 border border-blue-100" : "bg-red-50 text-red-600"}`}>
                     {perms.can_refer ? "✓ Refer" : "✗ Refer"}
                   </span>
                   <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${perms.can_register_patients ? "bg-slate-100 text-slate-700" : "bg-slate-100 text-slate-400"}`}>
@@ -106,16 +105,17 @@ export default function WorkerDashboard() {
             </div>
 
             {perms.can_screen && (
-              <button
+              <Button
+                size="sm"
                 onClick={() => navigate("/health-worker/screening/new")}
-                className="inline-flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-semibold hover:bg-emerald-700 transition-colors shadow-sm shrink-0 cursor-pointer"
+                className="gap-2 shadow-xs font-semibold"
               >
                 <Plus size={14} /> New Screening
-              </button>
+              </Button>
             )}
-          </SpotlightCard>
+          </Card>
 
-          {/* Stats with SpotlightCard and CountUp */}
+          {/* Stats with clean cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard label="Screenings today" value={mounted ? todayCount : 0} icon={<Eye size={18} />} sub="Recorded in database" accent="teal" />
             <StatCard label="Requiring referral" value={mounted ? referralCount : 0} icon={<Send size={18} />} sub="Active referrals" accent="amber" />
@@ -124,48 +124,45 @@ export default function WorkerDashboard() {
           </div>
 
           <div className="grid lg:grid-cols-3 gap-5">
-            {/* Recent Screenings Table with SpotlightCard */}
-            <SpotlightCard
-              spotlightColor="rgba(6, 182, 212, 0.15)"
-              className="lg:col-span-2 bg-white/95 border-slate-100 rounded-2xl overflow-hidden shadow-sm p-0"
-            >
+            {/* Recent Screenings Table */}
+            <Card className="lg:col-span-2 bg-white border-slate-200/80 rounded-2xl overflow-hidden shadow-xs p-0">
               <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
                 <div>
-                  <h2 className="font-semibold text-slate-800">Recorded Retinal Screenings</h2>
+                  <h2 className="font-semibold text-slate-900">Recorded Retinal Screenings</h2>
                   <p className="text-xs text-slate-400">Clinical metrics saved in database</p>
                 </div>
-                <button onClick={() => navigate("/health-worker/history")} className="text-xs text-emerald-600 hover:text-emerald-700 flex items-center gap-1 font-medium cursor-pointer">
+                <button onClick={() => navigate("/health-worker/history")} className="text-xs text-emerald-700 hover:text-emerald-800 flex items-center gap-1 font-medium cursor-pointer">
                   View all <ChevronRight size={12} />
                 </button>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-slate-100 bg-slate-50/50 text-slate-400 text-xs font-medium uppercase tracking-wider">
+                    <tr className="border-b border-slate-100 bg-slate-50/70 text-slate-500 text-xs font-medium uppercase tracking-wider">
                       {["Patient ID", "Date", "Eye", "Stage", "AI Confidence", "Risk", "Referral Status", "Action"].map(h => (
                         <th key={h} className="text-left px-4 py-3 whitespace-nowrap">{h}</th>
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-50">
+                  <tbody className="divide-y divide-slate-100">
                     {screenings.slice(0, 8).map(s => {
                       const pId = s.patient_id || (s as any).patientId;
                       const patient = patients.find(p => p.id === pId) || getPatient(pId);
                       return (
-                        <tr key={s.id} className="hover:bg-slate-50/50 transition-colors">
+                        <tr key={s.id} className="hover:bg-slate-50/60 transition-colors">
                           <td className="px-4 py-3.5 font-mono text-xs text-slate-700 font-semibold">
                             {pId}
                             {patient?.name && <span className="block font-sans text-[11px] text-slate-400 font-normal">{patient.name}</span>}
                           </td>
                           <td className="px-4 py-3.5 text-slate-600 whitespace-nowrap text-xs">{s.date}</td>
                           <td className="px-4 py-3.5 text-slate-500 capitalize text-xs">{s.eye}</td>
-                          <td className="px-4 py-3.5 text-xs text-slate-700 font-medium">
+                          <td className="px-4 py-3.5 text-xs text-slate-800 font-medium">
                             {s.title || (s as any).stageTitle || s.stage}
                           </td>
                           <td className="px-4 py-3.5">
                             <div className="flex items-center gap-2">
                               <div className="h-1.5 w-16 bg-slate-100 rounded-full overflow-hidden">
-                                <div className="h-full bg-emerald-400 rounded-full" style={{ width: `${s.confidence}%` }} />
+                                <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${s.confidence}%` }} />
                               </div>
                               <span className="text-xs font-mono text-slate-600">{s.confidence}%</span>
                             </div>
@@ -179,7 +176,7 @@ export default function WorkerDashboard() {
                           <td className="px-4 py-3.5">
                             <button
                               onClick={() => navigate("/health-worker/screening/new")}
-                              className="text-xs text-emerald-600 hover:text-emerald-700 font-medium flex items-center gap-1 cursor-pointer"
+                              className="text-xs text-emerald-700 hover:text-emerald-800 font-medium flex items-center gap-1 cursor-pointer"
                             >
                               New <ArrowRight size={11} />
                             </button>
@@ -195,49 +192,37 @@ export default function WorkerDashboard() {
                   </div>
                 )}
               </div>
-            </SpotlightCard>
+            </Card>
 
             {/* Right column: Quick AI Screening Card + Risk Distribution */}
             <div className="space-y-4">
-              <SpotlightCard
-                spotlightColor="rgba(16, 185, 129, 0.2)"
-                className="bg-white/95 rounded-2xl border border-slate-100 overflow-hidden cursor-pointer hover:shadow-md transition-all group p-5"
-              >
-                <div onClick={() => navigate("/health-worker/screening/new")}>
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-8 h-8 rounded-xl bg-emerald-500 flex items-center justify-center shadow-xs">
-                      <Zap size={15} className="text-white" />
+              <Card className="bg-white rounded-2xl border-slate-200/80 overflow-hidden shadow-xs hover:shadow-md transition-all group p-5">
+                <div onClick={() => navigate("/health-worker/screening/new")} className="cursor-pointer">
+                  <div className="flex items-center gap-2.5 mb-3">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center shadow-xs">
+                      <Zap size={15} />
                     </div>
                     <div>
-                      <ShinyText
-                        text="New AI Screening"
-                        className="text-xs font-bold text-slate-900"
-                        color="#0f172a"
-                        shineColor="#10b981"
-                        speed={2.5}
-                      />
-                      <p className="text-[10px] text-slate-400">Inference with Grad-CAM visualization</p>
+                      <h3 className="text-sm font-bold text-slate-900">New AI Screening</h3>
+                      <p className="text-[11px] text-slate-400">Inference with Grad-CAM visualization</p>
                     </div>
                   </div>
-                  <div className="bg-slate-900 rounded-xl overflow-hidden flex items-center justify-center mb-3" style={{ height: 120 }}>
+                  <div className="bg-slate-900 rounded-xl overflow-hidden flex items-center justify-center mb-3.5" style={{ height: 120 }}>
                     <RetinalImage mode="overlay" size={110} risk="high" />
                   </div>
-                  <button className="w-full bg-emerald-600 text-white py-2 rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm">
+                  <Button className="w-full gap-2 shadow-xs font-semibold">
                     <Plus size={14} /> Start Screening
-                  </button>
+                  </Button>
                 </div>
-              </SpotlightCard>
+              </Card>
 
-              <SpotlightCard
-                spotlightColor="rgba(245, 158, 11, 0.18)"
-                className="bg-white/95 rounded-2xl border border-slate-100 p-5 shadow-sm"
-              >
+              <Card className="bg-white rounded-2xl border-slate-200/80 p-5 shadow-xs">
                 <p className="text-xs font-bold text-slate-800 uppercase tracking-wide mb-3">Risk Distribution</p>
                 <div className="space-y-2.5">
                   {[
-                    { label: "Low Risk", count: screenings.filter(s => s.risk === "low").length, color: "bg-emerald-400" },
-                    { label: "Moderate", count: screenings.filter(s => s.risk === "moderate").length, color: "bg-amber-400" },
-                    { label: "High Risk", count: screenings.filter(s => s.risk === "high").length, color: "bg-red-400" },
+                    { label: "Low Risk", count: screenings.filter(s => s.risk === "low").length, color: "bg-emerald-500" },
+                    { label: "Moderate", count: screenings.filter(s => s.risk === "moderate").length, color: "bg-amber-500" },
+                    { label: "High Risk", count: screenings.filter(s => s.risk === "high").length, color: "bg-red-500" },
                   ].map(r => {
                     const total = screenings.length || 1;
                     const pct = Math.round((r.count / total) * 100);
@@ -254,7 +239,7 @@ export default function WorkerDashboard() {
                     );
                   })}
                 </div>
-              </SpotlightCard>
+              </Card>
             </div>
           </div>
 

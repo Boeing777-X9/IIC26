@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Waves, CountUp, SpotlightCard } from "@/components/reactbits";
 
 const steps = [
   {
@@ -133,19 +132,7 @@ export default function Landing() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 px-6 overflow-hidden">
-        {/* Subtle light medical wave background */}
-        <Waves
-          lineColor="rgba(16, 185, 129, 0.08)"
-          backgroundColor="transparent"
-          waveSpeedX={0.01}
-          waveSpeedY={0.005}
-          waveAmpX={24}
-          waveAmpY={12}
-          xGap={16}
-          yGap={36}
-        />
-
+      <section className="relative pt-32 pb-20 px-6 overflow-hidden bg-gradient-to-b from-emerald-50/30 via-white to-slate-50">
         <div className="relative z-10 max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-12 gap-12 items-center">
             {/* Left Hero Copy */}
@@ -187,23 +174,23 @@ export default function Landing() {
                 </Button>
               </div>
 
-              {/* Verified Metrics with CountUp */}
+              {/* Verified Clinical Metrics */}
               <div className="grid grid-cols-3 gap-6 pt-6 border-t border-slate-200 max-w-lg">
                 <div>
                   <div className="text-2xl sm:text-3xl font-bold text-slate-900 font-mono">
-                    <CountUp to={98.4} decimals={1} suffix="%" duration={1.5} />
+                    98.4%
                   </div>
                   <div className="text-xs text-slate-500 font-medium mt-0.5">Clinical Sensitivity</div>
                 </div>
                 <div>
                   <div className="text-2xl sm:text-3xl font-bold text-slate-900 font-mono">
-                    <CountUp to={15280} duration={1.8} suffix="+" />
+                    15,280+
                   </div>
                   <div className="text-xs text-slate-500 font-medium mt-0.5">Patients Screened</div>
                 </div>
                 <div>
                   <div className="text-2xl sm:text-3xl font-bold text-emerald-700 font-mono">
-                    &lt; <CountUp to={1.2} decimals={1} suffix="s" duration={1.2} />
+                    &lt; 1.2s
                   </div>
                   <div className="text-xs text-slate-500 font-medium mt-0.5">Model Inference</div>
                 </div>

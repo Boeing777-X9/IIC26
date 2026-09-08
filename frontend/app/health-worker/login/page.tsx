@@ -11,7 +11,6 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Waves } from "@/components/reactbits";
 
 export default function WorkerLoginPage() {
   const router = useRouter();
@@ -48,19 +47,7 @@ export default function WorkerLoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 overflow-hidden">
-      {/* Light subtle medical wave animation */}
-      <Waves
-        lineColor="rgba(16, 185, 129, 0.07)"
-        backgroundColor="transparent"
-        waveSpeedX={0.012}
-        waveSpeedY={0.005}
-        waveAmpX={28}
-        waveAmpY={14}
-        xGap={16}
-        yGap={36}
-      />
-
+    <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       {/* Brand Header */}
       <div className="relative z-10 sm:mx-auto sm:w-full sm:max-w-md text-center">
         <Link href="/" className="inline-flex items-center gap-2.5 mb-4 group">

@@ -10,7 +10,9 @@ import Sidebar from "@/components/Sidebar";
 import Topbar from "@/components/Topbar";
 import StatCard from "@/components/StatCard";
 import RiskBadge from "@/components/RiskBadge";
-import { SpotlightCard, ShinyText } from "@/components/reactbits";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   getReferrals,
   getPatient,
@@ -53,51 +55,45 @@ export default function DoctorDashboard() {
   const needsAttention = referrals.filter(r => r.status !== "reviewed");
 
   return (
-    <div className="flex h-screen bg-[#f0fdf8] overflow-hidden">
+    <div className="flex h-screen bg-slate-50 overflow-hidden">
       <Sidebar role="doctor" />
       <div className="flex flex-col flex-1 overflow-hidden">
         <Topbar title="Doctor Overview" subtitle="Dr. Arjun Rao · Ophthalmology Lead & Administrator" role="doctor" />
         <main className="flex-1 overflow-y-auto p-6 space-y-5">
 
-          {/* Database & Root Status Banner with ReactBits SpotlightCard */}
-          <SpotlightCard
-            spotlightColor="rgba(16, 185, 129, 0.2)"
-            className="bg-white/95 border-emerald-100 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100 shadow-xs">
-                <Database size={18} />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <ShinyText
-                    text="Real Clinical Database Active"
-                    className="font-bold text-slate-900 text-sm"
-                    color="#0f172a"
-                    shineColor="#10b981"
-                    speed={3}
-                  />
-                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-mono font-medium">
-                    {mounted ? `${dbStatus.engine.toUpperCase()}: ${dbStatus.database}` : "MONGODB: retinix"}
-                  </span>
+          {/* Database & Root Status Banner with clean Card */}
+          <Card className="p-4 border-slate-200/80 shadow-2xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0 border border-emerald-200/60">
+                  <Database size={18} />
                 </div>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Lightweight storage policy active: AI diagnoses recorded without raw image persistence.
-                </p>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-slate-900 text-sm">Real Clinical Database Active</span>
+                    <Badge variant="emerald" className="font-mono text-[11px]">
+                      {mounted ? `${dbStatus.engine.toUpperCase()}: ${dbStatus.database}` : "MONGODB: retinix"}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Lightweight storage policy active: AI diagnoses recorded without raw image persistence.
+                  </p>
+                </div>
               </div>
-            </div>
 
-            <div className="flex items-center gap-2">
-              <button
+              <Button
+                variant="subtle"
+                size="sm"
                 onClick={() => navigate("/doctor/workers")}
-                className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3.5 py-2 rounded-xl transition-colors shrink-0 cursor-pointer"
+                className="gap-1.5 font-semibold shrink-0"
               >
-                <Shield size={13} /> Manage Healthcare Workers {mounted && workers.length > 0 ? `(${workers.length})` : ""}
-              </button>
+                <Shield size={13} />
+                <span>Manage Healthcare Workers {mounted && workers.length > 0 ? `(${workers.length})` : ""}</span>
+              </Button>
             </div>
-          </SpotlightCard>
+          </Card>
 
-          {/* Stats with SpotlightCard and CountUp */}
+          {/* Stats */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard label="Cases awaiting review" value={mounted ? awaiting : 0} icon={<ClipboardList size={18} />} accent="amber" />
             <StatCard label="Priority cases" value={mounted ? highPriority : 0} icon={<AlertCircle size={18} />} accent="red" />
@@ -106,27 +102,29 @@ export default function DoctorDashboard() {
           </div>
 
           <div className="grid lg:grid-cols-3 gap-5">
-            {/* Cases requiring attention table with SpotlightCard */}
-            <SpotlightCard
-              spotlightColor="rgba(6, 182, 212, 0.15)"
-              className="lg:col-span-2 bg-white/95 border-slate-100 rounded-2xl overflow-hidden shadow-sm p-0"
-            >
+            {/* Cases requiring attention table */}
+            <Card className="lg:col-span-2 overflow-hidden border-slate-200/80 shadow-2xs">
               <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
                 <div>
-                  <h2 className="font-semibold text-slate-800">Cases Requiring Specialist Evaluation</h2>
-                  <p className="text-xs text-slate-400">Referrals forwarded from field healthcare workers</p>
+                  <h2 className="font-semibold text-slate-900 text-sm">Cases Requiring Specialist Evaluation</h2>
+                  <p className="text-xs text-slate-500">Referrals forwarded from field healthcare workers</p>
                 </div>
-                <button onClick={() => navigate("/doctor/cases")} className="text-xs text-emerald-600 hover:text-emerald-700 flex items-center gap-1 font-medium cursor-pointer">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/doctor/cases")}
+                  className="text-xs text-emerald-700 hover:text-emerald-800 gap-1 font-medium"
+                >
                   View all cases <ChevronRight size={12} />
-                </button>
+                </Button>
               </div>
 
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-slate-50 text-slate-400 text-xs font-medium uppercase tracking-wider bg-slate-50/40">
+                    <tr className="border-b border-slate-100 text-slate-500 text-xs font-semibold uppercase tracking-wider bg-slate-50/50 text-left">
                       {["Patient ID", "Date", "Risk", "Stage", "AI Confidence", "Priority", "Status", "Action"].map(h => (
-                        <th key={h} className="text-left px-4 py-3 whitespace-nowrap">{h}</th>
+                        <th key={h} className="px-4 py-3 whitespace-nowrap font-medium text-slate-600">{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -134,31 +132,35 @@ export default function DoctorDashboard() {
                     {needsAttention.map(r => {
                       const pId = r.patient_id || (r as any).patientId;
                       const patient = patients.find(p => p.id === pId) || getPatient(pId);
-                      const priorityColor = r.priority === "priority" ? "text-red-600 bg-red-50" : r.priority === "urgent" ? "text-amber-600 bg-amber-50" : "text-slate-600 bg-slate-50";
+                      const priorityBadgeVariant = r.priority === "priority" ? "destructive" : r.priority === "urgent" ? "amber" : "secondary";
                       const statusMap: Record<string, string> = { pending: "Pending", viewed: "Viewed", "under-review": "Under Review" };
                       return (
-                        <tr key={r.id} className="hover:bg-slate-50/50 transition-colors">
-                          <td className="px-4 py-3.5 font-mono text-xs text-slate-700 font-semibold">
+                        <tr key={r.id} className="hover:bg-slate-50/70 transition-colors">
+                          <td className="px-4 py-3.5 font-mono text-xs text-slate-800 font-semibold">
                             {pId}
-                            {patient?.name && <span className="block font-sans text-[11px] text-slate-400 font-normal">{patient.name}</span>}
+                            {patient?.name && <span className="block font-sans text-[11px] text-slate-500 font-normal">{patient.name}</span>}
                           </td>
                           <td className="px-4 py-3.5 text-slate-600 whitespace-nowrap text-xs">{r.date}</td>
                           <td className="px-4 py-3.5"><RiskBadge risk={r.risk} size="sm" /></td>
-                          <td className="px-4 py-3.5 text-xs text-slate-700 font-medium">
+                          <td className="px-4 py-3.5 text-xs text-slate-800 font-medium">
                             {r.stage_title || (r.risk === "high" ? "Severe DR" : "Moderate DR")}
                           </td>
                           <td className="px-4 py-3.5 font-mono text-xs text-slate-600">{r.confidence}%</td>
                           <td className="px-4 py-3.5">
-                            <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium capitalize ${priorityColor}`}>{r.priority}</span>
+                            <Badge variant={priorityBadgeVariant as any} className="capitalize text-[11px]">
+                              {r.priority}
+                            </Badge>
                           </td>
-                          <td className="px-4 py-3.5 text-xs text-slate-500">{statusMap[r.status] ?? r.status}</td>
+                          <td className="px-4 py-3.5 text-xs text-slate-600">{statusMap[r.status] ?? r.status}</td>
                           <td className="px-4 py-3.5">
-                            <button
+                            <Button
+                              variant="subtle"
+                              size="sm"
                               onClick={() => navigate(`/doctor/cases/${r.id}`)}
-                              className="text-xs bg-emerald-50 text-emerald-700 hover:bg-emerald-100 px-3 py-1 rounded-lg font-medium inline-flex items-center gap-1 transition-colors cursor-pointer"
+                              className="text-xs h-7 px-2.5 gap-1"
                             >
                               Review <ChevronRight size={11} />
-                            </button>
+                            </Button>
                           </td>
                         </tr>
                       );
@@ -171,14 +173,11 @@ export default function DoctorDashboard() {
                   </div>
                 )}
               </div>
-            </SpotlightCard>
+            </Card>
 
-            {/* Right sidebar with SpotlightCards */}
+            {/* Right sidebar */}
             <div className="space-y-4">
-              <SpotlightCard
-                spotlightColor="rgba(245, 158, 11, 0.18)"
-                className="bg-white/95 border-slate-100 rounded-2xl p-5 shadow-sm"
-              >
+              <Card className="p-5 border-slate-200/80 shadow-2xs">
                 <p className="text-xs font-bold text-slate-800 uppercase tracking-wide mb-3">Priority Breakdown</p>
                 {[
                   { label: "Priority", count: highPriority, color: "bg-red-500", pct: awaiting ? Math.round((highPriority / awaiting) * 100) : 0 },
@@ -191,36 +190,35 @@ export default function DoctorDashboard() {
                       <span className="font-mono text-slate-500">{item.count} ({item.pct}%)</span>
                     </div>
                     <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                      <div className={`h-full ${item.color} rounded-full transition-all duration-500`} style={{ width: `${item.pct}%` }} />
+                      <div className={`h-full ${item.color} rounded-full transition-all duration-300`} style={{ width: `${item.pct}%` }} />
                     </div>
                   </div>
                 ))}
-              </SpotlightCard>
+              </Card>
 
-              <SpotlightCard
-                spotlightColor="rgba(16, 185, 129, 0.18)"
-                className="bg-white/95 border-slate-100 rounded-2xl p-5 shadow-sm space-y-3"
-              >
-                <p className="text-xs font-bold text-slate-800 uppercase tracking-wide mb-1">Doctor Actions</p>
-                <button
+              <Card className="p-5 border-slate-200/80 shadow-2xs space-y-3">
+                <p className="text-xs font-bold text-slate-800 uppercase tracking-wide mb-1">Clinical Actions</p>
+                <Button
+                  variant="subtle"
                   onClick={() => navigate("/doctor/cases")}
-                  className="w-full flex items-center justify-between p-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 transition-colors text-xs font-semibold cursor-pointer"
+                  className="w-full justify-between font-medium text-xs h-10 px-3"
                 >
                   <span className="flex items-center gap-2">
                     <Stethoscope size={15} /> Open Review Queue
                   </span>
                   <ChevronRight size={14} />
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="outline"
                   onClick={() => navigate("/doctor/analytics")}
-                  className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 transition-colors text-xs font-semibold cursor-pointer"
+                  className="w-full justify-between font-medium text-xs h-10 px-3"
                 >
                   <span className="flex items-center gap-2">
                     <TrendingUp size={15} /> Clinical Analytics
                   </span>
                   <ChevronRight size={14} />
-                </button>
-              </SpotlightCard>
+                </Button>
+              </Card>
             </div>
           </div>
         </main>

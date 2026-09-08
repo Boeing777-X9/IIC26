@@ -384,7 +384,9 @@ export default function Waves({
       }}
       className={`absolute inset-0 w-full h-full overflow-hidden pointer-events-none ${className}`}
     >
-      <canvas ref={canvasRef} className="block w-full h-full pointer-events-auto" />
+      <canvas ref={canvasRef} className="block w-full h-full pointer-events-none" />
     </div>
   );
 }
+
+export { Waves };

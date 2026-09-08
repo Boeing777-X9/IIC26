@@ -11,6 +11,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Waves } from "@/components/reactbits/Waves";
 
 export default function WorkerLoginPage() {
   const router = useRouter();
@@ -47,7 +48,18 @@ export default function WorkerLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="relative min-h-screen bg-gradient-to-b from-emerald-50/40 via-slate-50 to-emerald-50/20 flex flex-col justify-center py-12 sm:px-6 lg:px-8 overflow-hidden">
+      <Waves
+        lineColor="rgba(16, 185, 129, 0.16)"
+        backgroundColor="transparent"
+        waveSpeedX={0.012}
+        waveSpeedY={0.006}
+        waveAmpX={32}
+        waveAmpY={16}
+        xGap={14}
+        yGap={32}
+      />
+
       {/* Brand Header */}
       <div className="relative z-10 sm:mx-auto sm:w-full sm:max-w-md text-center">
         <Link href="/" className="inline-flex items-center gap-2.5 mb-4 group">

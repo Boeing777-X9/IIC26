@@ -86,3 +86,14 @@ body {
   background: radial-gradient(ellipse at 60% 35%, rgba(239,68,68,0.4) 0%, rgba(245,158,11,0.25) 25%, transparent 55%),
               radial-gradient(ellipse at 30% 60%, rgba(245,158,11,0.35) 0%, transparent 40%);
 }
+
+@keyframes laser-scan {
+  0% { transform: translateY(0); opacity: 0; }
+  15% { opacity: 0.9; }
+  85% { opacity: 0.9; }
+  100% { transform: translateY(224px); opacity: 0; }
+}
+
+.animate-laser-scan {
+  animation: laser-scan 2.8s ease-in-out infinite;
+}

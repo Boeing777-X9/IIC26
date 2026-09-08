@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Waves } from "@/components/reactbits/Waves";
 
 const steps = [
   {
@@ -132,14 +133,25 @@ export default function Landing() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 px-6 overflow-hidden bg-gradient-to-b from-emerald-50/30 via-white to-slate-50">
+      <section className="relative pt-32 pb-20 px-6 overflow-hidden bg-gradient-to-b from-emerald-50/40 via-white to-slate-50">
+        <Waves
+          lineColor="rgba(16, 185, 129, 0.2)"
+          backgroundColor="transparent"
+          waveSpeedX={0.012}
+          waveSpeedY={0.006}
+          waveAmpX={36}
+          waveAmpY={18}
+          xGap={14}
+          yGap={34}
+        />
+
         <div className="relative z-10 max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-12 gap-12 items-center">
             {/* Left Hero Copy */}
             <div className="lg:col-span-7 space-y-6">
               <div className="inline-flex items-center gap-2">
                 <Badge variant="emerald" className="gap-1.5 py-1 px-3">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                   AI Retinal Screening & Tele-Triage
                 </Badge>
                 <span className="text-xs text-slate-500 font-medium">Rural-First Protocol</span>
@@ -199,11 +211,11 @@ export default function Landing() {
 
             {/* Right Hero Fundus Card */}
             <div className="lg:col-span-5 flex justify-center">
-              <Card className="w-full max-w-md shadow-lg border-slate-200/90 bg-white/95 backdrop-blur-xs">
+              <Card className="w-full max-w-md shadow-xl border-slate-200/90 bg-white/95 backdrop-blur-xs">
                 <CardHeader className="pb-4 border-b border-slate-100">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
                       <CardTitle className="text-sm">Fundus AI Inspection</CardTitle>
                     </div>
                     <Badge variant="secondary" className="font-mono text-[10px]">
@@ -216,15 +228,35 @@ export default function Landing() {
                 </CardHeader>
 
                 <CardContent className="pt-5 space-y-4">
-                  {/* Fundus Circle View */}
+                  {/* Fundus Circle View with Laser Scan & Crosshairs */}
                   <div className="flex justify-center py-2">
-                    <div className="relative w-56 h-56 rounded-full overflow-hidden border-4 border-slate-100 shadow-inner bg-slate-950 flex items-center justify-center">
+                    <div className="relative w-56 h-56 rounded-full overflow-hidden border-4 border-slate-100 shadow-inner bg-slate-950 flex items-center justify-center group">
                       <RetinalImage
                         mode={viewMode as any}
                         size={224}
                         animated
                         risk={selectedStage === "severe" ? "high" : "low"}
                       />
+
+                      {/* Cool Laser Scan Beam */}
+                      <div className="absolute inset-0 pointer-events-none rounded-full overflow-hidden">
+                        <div className="w-full h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_12px_rgba(6,182,212,0.9)] animate-laser-scan" />
+                      </div>
+
+                      {/* Reticle Crosshair */}
+                      <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                        <div className="w-14 h-14 border border-emerald-400/30 rounded-full flex items-center justify-center">
+                          <div className="w-1.5 h-1.5 bg-emerald-400/60 rounded-full" />
+                        </div>
+                        <div className="absolute w-20 h-[1px] bg-emerald-400/20" />
+                        <div className="absolute h-20 w-[1px] bg-emerald-400/20" />
+                      </div>
+
+                      {/* Live Badge */}
+                      <div className="absolute top-2.5 left-3 bg-slate-950/80 backdrop-blur-md px-2 py-0.5 rounded-full border border-emerald-500/30 flex items-center gap-1.5 text-[9px] text-emerald-400 font-mono">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        GRAD-CAM ACTIVE
+                      </div>
                     </div>
                   </div>
 
@@ -482,6 +514,51 @@ export default function Landing() {
                 </div>
               </CardContent>
             </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Call to Action Section with Waves */}
+      <section className="relative py-24 px-6 overflow-hidden bg-gradient-to-b from-slate-900 to-slate-950 text-white">
+        <Waves
+          lineColor="rgba(16, 185, 129, 0.22)"
+          backgroundColor="transparent"
+          waveSpeedX={0.015}
+          waveSpeedY={0.007}
+          waveAmpX={38}
+          waveAmpY={18}
+          xGap={14}
+          yGap={32}
+        />
+        <div className="relative z-10 max-w-4xl mx-auto text-center space-y-6">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold">
+            <Sparkles size={13} className="text-emerald-400" />
+            Field-Tested Tele-Ophthalmology
+          </div>
+          <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight">
+            Ready to experience next-generation retinal screening?
+          </h2>
+          <p className="text-slate-300 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
+            Test the live PyTorch model with fundus photographs, review Grad-CAM explainability heatmaps, and simulate rural tele-ophthalmology triage in real time.
+          </p>
+          <div className="flex flex-wrap justify-center gap-4 pt-2">
+            <Button
+              size="lg"
+              onClick={() => navigate("/health-worker/screening/new")}
+              className="gap-2 shadow-lg shadow-emerald-500/20 font-semibold bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer"
+            >
+              <Eye size={18} />
+              <span>Start Retinal Screening</span>
+              <ArrowRight size={16} />
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => navigate("/doctor")}
+              className="bg-slate-800/80 hover:bg-slate-800 text-slate-200 border-slate-700 font-semibold cursor-pointer"
+            >
+              <span>Access Doctor Review Queue</span>
+            </Button>
           </div>
         </div>
       </section>

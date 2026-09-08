@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation";
 import {
   Eye, Lock, User, ArrowRight, AlertCircle, CheckCircle2, Shield, EyeOff, Sparkles
 } from "lucide-react";
-import { loginWorkerApi, DEFAULT_WORKER } from "@/lib/store";
+import { loginWorkerApi } from "@/lib/store";
+import { Waves, SpotlightCard, ShinyText } from "@/components/reactbits";
 
 export default function WorkerLoginPage() {
   const router = useRouter();
@@ -43,27 +44,51 @@ export default function WorkerLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f0fdf8] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="relative min-h-screen bg-[#090d16] text-slate-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8 overflow-hidden">
+      {/* ReactBits Waves Background */}
+      <Waves
+        lineColor="rgba(6, 182, 212, 0.22)"
+        backgroundColor="transparent"
+        waveSpeedX={0.015}
+        waveSpeedY={0.007}
+        waveAmpX={36}
+        waveAmpY={18}
+        xGap={14}
+        yGap={34}
+      />
+
       {/* Top Brand */}
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
+      <div className="relative z-10 sm:mx-auto sm:w-full sm:max-w-md text-center">
         <Link href="/" className="inline-flex items-center gap-2.5 mb-4 group">
-          <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center shadow-md shadow-emerald-200 group-hover:bg-emerald-700 transition-colors">
-            <Eye size={20} className="text-white" />
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-500 to-cyan-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 group-hover:scale-105 transition-transform">
+            <Eye size={22} className="text-white" />
           </div>
-          <span className="font-bold text-slate-900 tracking-tight text-xl">Retinix</span>
+          <span className="font-bold text-white tracking-tight text-2xl">Retinix</span>
         </Link>
-        <h2 className="text-2xl font-bold text-slate-900">Healthcare Worker Portal</h2>
-        <p className="mt-1 text-xs text-slate-500 max-w-sm mx-auto">
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <ShinyText
+            text="CLINICAL TELE-TRIAGE GATEWAY"
+            className="text-xs tracking-wider uppercase font-semibold"
+            color="#64748b"
+            shineColor="#38bdf8"
+            speed={2.5}
+          />
+        </div>
+        <h2 className="text-2xl font-bold text-white tracking-tight">Healthcare Worker Portal</h2>
+        <p className="mt-1 text-xs text-slate-400 max-w-sm mx-auto">
           Sign in to access AI retinal screening, patient tele-triage, and clinical referrals.
         </p>
       </div>
 
-      {/* Login Card */}
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-6 shadow-sm border border-slate-200/80 rounded-3xl sm:px-10">
+      {/* Login Card with ReactBits SpotlightCard */}
+      <div className="relative z-10 mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <SpotlightCard
+          className="bg-slate-900/80 border-slate-800/80 backdrop-blur-2xl py-8 px-6 sm:px-10 shadow-2xl shadow-cyan-950/40"
+          spotlightColor="rgba(6, 182, 212, 0.2)"
+        >
           {errorMsg && (
-            <div className="mb-5 p-3.5 bg-red-50 border border-red-200 rounded-2xl flex items-start gap-2.5 text-xs text-red-700 animate-in fade-in">
-              <AlertCircle size={16} className="shrink-0 mt-0.5 text-red-600" />
+            <div className="mb-5 p-3.5 bg-red-950/60 border border-red-800/60 rounded-2xl flex items-start gap-2.5 text-xs text-red-200 animate-in fade-in">
+              <AlertCircle size={16} className="shrink-0 mt-0.5 text-red-400" />
               <span>{errorMsg}</span>
             </div>
           )}
@@ -71,11 +96,11 @@ export default function WorkerLoginPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Worker ID / Email */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
                 Worker ID or Registered Email
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
                   <User size={16} />
                 </div>
                 <input
@@ -84,7 +109,7 @@ export default function WorkerLoginPage() {
                   value={login}
                   onChange={e => setLogin(e.target.value)}
                   placeholder="e.g. HW-101 or priya.venkat@health.gov.in"
-                  className="w-full pl-10 pr-3.5 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-mono"
+                  className="w-full pl-10 pr-3.5 py-2.5 bg-slate-950/70 border border-slate-700/80 rounded-xl text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-500 transition-all font-mono"
                 />
               </div>
             </div>
@@ -92,13 +117,13 @@ export default function WorkerLoginPage() {
             {/* Password */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-semibold text-slate-700">
+                <label className="block text-xs font-semibold text-slate-300">
                   Access Password / PIN
                 </label>
-                <span className="text-[11px] text-slate-400">Issued by Root Doctor</span>
+                <span className="text-[11px] text-slate-500">Issued by Root Doctor</span>
               </div>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
                   <Lock size={16} />
                 </div>
                 <input
@@ -107,12 +132,12 @@ export default function WorkerLoginPage() {
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   placeholder="••••••••••••"
-                  className="w-full pl-10 pr-10 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                  className="w-full pl-10 pr-10 py-2.5 bg-slate-950/70 border border-slate-700/80 rounded-xl text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-500 transition-all"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-200 transition-colors"
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -123,7 +148,7 @@ export default function WorkerLoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full mt-2 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 px-4 rounded-xl font-semibold text-sm transition-all shadow-sm shadow-emerald-200 disabled:opacity-50 cursor-pointer"
+              className="w-full mt-2 flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white py-2.5 px-4 rounded-xl font-semibold text-sm transition-all shadow-md shadow-cyan-900/30 disabled:opacity-50 cursor-pointer"
             >
               {isLoading ? (
                 <span>Verifying Credentials...</span>
@@ -137,26 +162,26 @@ export default function WorkerLoginPage() {
           </form>
 
           {/* Demo Quick Fill */}
-          <div className="mt-6 pt-6 border-t border-slate-100">
+          <div className="mt-6 pt-6 border-t border-slate-800/80">
             <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-              <Sparkles size={13} className="text-amber-500" />
+              <Sparkles size={13} className="text-amber-400" />
               Demo / Seeded Credentials
             </p>
             <button
               type="button"
               onClick={() => handleQuickFill("HW-101", "retinix2026")}
-              className="w-full text-left p-3 rounded-xl border border-emerald-100 bg-emerald-50/50 hover:bg-emerald-50 transition-colors group cursor-pointer"
+              className="w-full text-left p-3 rounded-xl border border-cyan-900/50 bg-cyan-950/20 hover:bg-cyan-950/40 transition-colors group cursor-pointer"
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-semibold text-slate-800 group-hover:text-emerald-800">
-                    Priya Venkat (Primary Health Screener)
+                  <p className="text-xs font-semibold text-slate-200 group-hover:text-cyan-300 transition-colors">
+                    Dr. Kavitha Selvam (Lead Screening Specialist)
                   </p>
-                  <p className="text-[11px] text-slate-500 font-mono mt-0.5">
-                    ID: <span className="text-emerald-700 font-bold">HW-101</span> · PIN: <span className="text-slate-700 font-bold">retinix2026</span>
+                  <p className="text-[11px] text-slate-400 font-mono mt-0.5">
+                    ID: <span className="text-cyan-400 font-bold">HW-101</span> · PIN: <span className="text-slate-200 font-bold">retinix2026</span>
                   </p>
                 </div>
-                <span className="text-[11px] font-semibold text-emerald-600 bg-white px-2 py-1 rounded-lg border border-emerald-200 shrink-0">
+                <span className="text-[11px] font-semibold text-cyan-300 bg-cyan-900/60 px-2.5 py-1 rounded-lg border border-cyan-700/60 shrink-0">
                   Quick Fill
                 </span>
               </div>
@@ -164,15 +189,15 @@ export default function WorkerLoginPage() {
           </div>
 
           {/* Administrative notice */}
-          <div className="mt-6 flex items-center justify-between text-xs text-slate-500">
-            <Link href="/" className="hover:text-slate-800 transition-colors">
+          <div className="mt-6 flex items-center justify-between text-xs text-slate-400">
+            <Link href="/" className="hover:text-slate-200 transition-colors">
               ← Return Home
             </Link>
-            <Link href="/doctor/workers" className="text-emerald-600 hover:text-emerald-700 font-medium flex items-center gap-1">
+            <Link href="/doctor/workers" className="text-cyan-400 hover:text-cyan-300 font-medium flex items-center gap-1">
               <Shield size={12} /> Doctor Admin Portal
             </Link>
           </div>
-        </div>
+        </SpotlightCard>
       </div>
     </div>
   );

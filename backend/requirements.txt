@@ -1,3 +1,10 @@
 fastapi
 python-multipart
 uvicorn[standard]
+torch
+torchvision
+pillow
+opencv-python-headless
+numpy
+pymongo
+dnspython

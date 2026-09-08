@@ -1,0 +1,11 @@
+{
+  "title": "RetinaGrid — Clinical Retinal Screening & Tele-Triage Platform",
+  "description": "This explainable AI platform enhances diabetic retinopathy screening in rural India, enabling healthcare workers to assess retinal images and prioritize referrals for specialists.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

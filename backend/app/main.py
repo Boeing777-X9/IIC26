@@ -21,6 +21,8 @@ from app.db import (
     get_all_patients,
     get_patient_by_id,
     create_patient,
+    delete_patient,
+    delete_all_patients,
     get_all_screenings,
     create_screening,
     get_all_referrals,
@@ -216,6 +218,20 @@ def add_patient(payload: Dict[str, Any] = Body(...)):
             raise HTTPException(status_code=400, detail=f"Missing required field: {field}")
 
     return create_patient(payload)
+
+
+@app.delete("/api/patients/{patient_id}")
+def remove_patient(patient_id: str):
+    success = delete_patient(patient_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Patient not found")
+    return {"message": f"Patient {patient_id} deleted successfully"}
+
+
+@app.delete("/api/patients")
+def remove_all_patients():
+    count = delete_all_patients()
+    return {"message": f"All {count} patient(s) and associated records deleted successfully", "deleted_count": count}
 
 
 # ===================== SCREENINGS (DATA-ONLY) =====================

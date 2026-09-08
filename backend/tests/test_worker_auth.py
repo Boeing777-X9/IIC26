@@ -20,6 +20,12 @@ class TestWorkerAuthentication(unittest.TestCase):
                 "permissions": {"can_screen": True}
             })
 
+    @classmethod
+    def tearDownClass(cls):
+        from app.db import delete_worker
+        delete_worker("HW-AUTH-TEST")
+        delete_worker("HW-TEST-99")
+
     def setUp(self):
         self.client = TestClient(app)
 

@@ -394,6 +394,37 @@ export async function createPatientApi(patientData: Patient): Promise<Patient> {
   return patientData;
 }
 
+export async function deletePatientApi(patientId: string): Promise<boolean> {
+  const current = getPatients().filter(p => p.id !== patientId);
+  saveLocal("retina_patients", current);
+
+  const currentScreenings = getScreenings().filter(s => s.patient_id !== patientId && (s as any).patientId !== patientId);
+  saveLocal("retina_screenings", currentScreenings);
+
+  const currentReferrals = getReferrals().filter(r => r.patient_id !== patientId && (r as any).patientId !== patientId);
+  saveLocal("retina_referrals", currentReferrals);
+
+  try {
+    const res = await fetch(`${API_BASE}/patients/${patientId}`, { method: "DELETE" });
+    return res.ok;
+  } catch {
+    return true;
+  }
+}
+
+export async function deleteAllPatientsApi(): Promise<boolean> {
+  saveLocal("retina_patients", []);
+  saveLocal("retina_screenings", []);
+  saveLocal("retina_referrals", []);
+
+  try {
+    const res = await fetch(`${API_BASE}/patients`, { method: "DELETE" });
+    return res.ok;
+  } catch {
+    return true;
+  }
+}
+
 export async function fetchScreeningsApi(): Promise<Screening[]> {
   try {
     const res = await fetch(`${API_BASE}/screenings`);

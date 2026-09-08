@@ -124,18 +124,7 @@ def init_db():
                 {"$set": {"password_hash": default_pwd_hash}}
             )
 
-        # Seed default patients if empty
-        if _mongo_db.patients.count_documents({}) == 0:
-            initial_patients = [
-                {"id": "PT-1001", "name": "Lakshmi Devi", "age": 58, "diabetes_duration": 12, "village": "Tirunelveli", "contact": "+91 94123 45678", "registered_by": "HW-101", "created_at": datetime.now().isoformat()},
-                {"id": "PT-1002", "name": "Rajan Krishnamurthy", "age": 63, "diabetes_duration": 8, "village": "Madurai", "contact": "+91 98765 12345", "registered_by": "HW-101", "created_at": datetime.now().isoformat()},
-                {"id": "PT-1003", "name": "Saraswathi Nair", "age": 51, "diabetes_duration": 5, "village": "Coimbatore", "contact": "+91 91234 67890", "registered_by": "HW-101", "created_at": datetime.now().isoformat()},
-                {"id": "PT-1004", "name": "Murugesan Pillai", "age": 71, "diabetes_duration": 15, "village": "Salem", "contact": "+91 87654 32109", "registered_by": "HW-101", "created_at": datetime.now().isoformat()},
-                {"id": "PT-1005", "name": "Kamala Sundaram", "age": 45, "diabetes_duration": 3, "village": "Vellore", "contact": "+91 99876 54321", "registered_by": "HW-101", "created_at": datetime.now().isoformat()},
-                {"id": "PT-1006", "name": "Selvam Arumugam", "age": 66, "diabetes_duration": 11, "village": "Thanjavur", "contact": "+91 93210 98765", "registered_by": "HW-101", "created_at": datetime.now().isoformat()},
-            ]
-            _mongo_db.patients.insert_many(initial_patients)
-            logger.info("Seeded initial patients in MongoDB.")
+        # Do not seed mock patients automatically to allow a clean slate
 
         return True
     except Exception as e:
@@ -200,17 +189,6 @@ def _init_sqlite_fallback():
                  "allowed_locations": ["Tirunelveli", "Alangulam", "Tenkasi"]
              }), datetime.now().isoformat())
         )
-    cursor.execute("SELECT COUNT(*) FROM patients")
-    if cursor.fetchone()[0] == 0:
-        initial_patients = [
-            ("PT-1001", "Lakshmi Devi", 58, 12, "Tirunelveli", "+91 94123 45678", "HW-101", datetime.now().isoformat()),
-            ("PT-1002", "Rajan Krishnamurthy", 63, 8, "Madurai", "+91 98765 12345", "HW-101", datetime.now().isoformat()),
-            ("PT-1003", "Saraswathi Nair", 51, 5, "Coimbatore", "+91 91234 67890", "HW-101", datetime.now().isoformat()),
-            ("PT-1004", "Murugesan Pillai", 71, 15, "Salem", "+91 87654 32109", "HW-101", datetime.now().isoformat()),
-            ("PT-1005", "Kamala Sundaram", 45, 3, "Vellore", "+91 99876 54321", "HW-101", datetime.now().isoformat()),
-            ("PT-1006", "Selvam Arumugam", 66, 11, "Thanjavur", "+91 93210 98765", "HW-101", datetime.now().isoformat()),
-        ]
-        cursor.executemany("INSERT INTO patients VALUES (?, ?, ?, ?, ?, ?, ?, ?)", initial_patients)
     conn.commit()
     conn.close()
 
@@ -444,6 +422,44 @@ def create_patient(data: Dict[str, Any]) -> Dict[str, Any]:
     conn.commit()
     conn.close()
     return get_patient_by_id(data["id"])
+
+
+def delete_patient(patient_id: str) -> bool:
+    if _use_mongodb:
+        res = _mongo_db.patients.delete_one({"id": patient_id})
+        _mongo_db.screenings.delete_many({"patient_id": patient_id})
+        _mongo_db.referrals.delete_many({"patient_id": patient_id})
+        return res.deleted_count > 0
+
+    import sqlite3
+    conn = sqlite3.connect(SQLITE_PATH)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM patients WHERE id = ?", (patient_id,))
+    deleted = cursor.rowcount > 0
+    cursor.execute("DELETE FROM screenings WHERE patient_id = ?", (patient_id,))
+    cursor.execute("DELETE FROM referrals WHERE patient_id = ?", (patient_id,))
+    conn.commit()
+    conn.close()
+    return deleted
+
+
+def delete_all_patients() -> int:
+    if _use_mongodb:
+        res = _mongo_db.patients.delete_many({})
+        _mongo_db.screenings.delete_many({})
+        _mongo_db.referrals.delete_many({})
+        return res.deleted_count
+
+    import sqlite3
+    conn = sqlite3.connect(SQLITE_PATH)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM patients")
+    count = cursor.rowcount
+    cursor.execute("DELETE FROM screenings")
+    cursor.execute("DELETE FROM referrals")
+    conn.commit()
+    conn.close()
+    return count
 
 
 # ================= Screenings CRUD (NO RAW IMAGES STORED) =================

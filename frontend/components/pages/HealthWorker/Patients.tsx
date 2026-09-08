@@ -12,7 +12,8 @@ import {
   ShieldAlert, 
   X, 
   ArrowRight,
-  Activity
+  Activity,
+  Trash2
 } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import Topbar from "@/components/Topbar";
@@ -24,6 +25,8 @@ import {
   getActiveWorker, 
   fetchPatientsApi, 
   createPatientApi, 
+  deletePatientApi,
+  deleteAllPatientsApi,
   fetchScreeningsApi 
 } from "@/lib/store";
 
@@ -162,24 +165,43 @@ export default function Patients({ role = "worker" }: { role?: "worker" | "docto
               </select>
             </div>
 
-            {/* Register Patient Button */}
-            {canRegister ? (
-              <button
-                onClick={() => setShowRegisterModal(true)}
-                className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow-sm transition-all shrink-0"
-              >
-                <Plus size={16} />
-                <span>Register New Patient</span>
-              </button>
-            ) : (
-              <div 
-                title="Root Doctor has not granted you permission to register new patients"
-                className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 border border-slate-200 text-slate-400 text-xs rounded-xl cursor-not-allowed shrink-0"
-              >
-                <AlertCircle size={14} />
-                <span>Registration Restricted</span>
-              </div>
-            )}
+            <div className="flex items-center gap-2 shrink-0">
+              {patients.length > 0 && (
+                <button
+                  onClick={async () => {
+                    if (window.confirm(`Are you sure you want to remove all ${patients.length} patients and their associated records? This cannot be undone.`)) {
+                      await deleteAllPatientsApi();
+                      setPatients([]);
+                      setScreenings([]);
+                    }
+                  }}
+                  className="flex items-center justify-center gap-1.5 border border-red-200 text-red-600 hover:bg-red-50 px-3 py-2 rounded-xl text-xs font-medium transition-all"
+                  title="Remove all patient records"
+                >
+                  <Trash2 size={14} />
+                  <span>Clear All</span>
+                </button>
+              )}
+
+              {/* Register Patient Button */}
+              {canRegister ? (
+                <button
+                  onClick={() => setShowRegisterModal(true)}
+                  className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow-sm transition-all shrink-0"
+                >
+                  <Plus size={16} />
+                  <span>Register New Patient</span>
+                </button>
+              ) : (
+                <div 
+                  title="Root Doctor has not granted you permission to register new patients"
+                  className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 border border-slate-200 text-slate-400 text-xs rounded-xl cursor-not-allowed shrink-0"
+                >
+                  <AlertCircle size={14} />
+                  <span>Registration Restricted</span>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Patient Cards Grid */}
@@ -190,17 +212,19 @@ export default function Patients({ role = "worker" }: { role?: "worker" | "docto
             </div>
           ) : visiblePatients.length === 0 ? (
             <div className="bg-white rounded-2xl border border-dashed border-slate-200 p-12 text-center max-w-md mx-auto my-12">
-              <User size={36} className="mx-auto text-slate-300 mb-3" />
-              <h3 className="font-semibold text-slate-700 text-base">No patients found</h3>
-              <p className="text-xs text-slate-400 mt-1">
-                {search || villageFilter !== "all"
-                  ? "No registered patients match your search criteria."
-                  : "No patients are registered in this clinic cluster yet."}
+              <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3 text-slate-400">
+                <User size={24} />
+              </div>
+              <h3 className="text-base font-semibold text-slate-800 mb-1">No Patients Found</h3>
+              <p className="text-xs text-slate-400 mb-4">
+                {search || villageFilter !== "all" 
+                  ? "Try changing your search keywords or village filter." 
+                  : "No registered patients in the database. Register a new patient to begin screenings."}
               </p>
               {canRegister && (
                 <button
                   onClick={() => setShowRegisterModal(true)}
-                  className="mt-4 inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium px-4 py-2 rounded-xl"
+                  className="mt-2 inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium px-4 py-2 rounded-xl"
                 >
                   <Plus size={14} />
                   Register First Patient
@@ -257,13 +281,30 @@ export default function Patients({ role = "worker" }: { role?: "worker" | "docto
                         <span>{pScreenings.length} screening{pScreenings.length !== 1 ? "s" : ""}</span>
                       </div>
 
-                      <button
-                        onClick={() => navigate("/health-worker/screening/new")}
-                        className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1.5 rounded-lg transition-colors"
-                      >
-                        <span>Screen</span>
-                        <ArrowRight size={12} />
-                      </button>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            if (window.confirm(`Delete patient ${p.name} (${p.id}) and all their screenings?`)) {
+                              await deletePatientApi(p.id);
+                              setPatients(prev => prev.filter(x => x.id !== p.id));
+                              setScreenings(prev => prev.filter(x => x.patient_id !== p.id && (x as any).patientId !== p.id));
+                            }
+                          }}
+                          title="Delete patient"
+                          className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+
+                        <button
+                          onClick={() => navigate("/health-worker/screening/new")}
+                          className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1.5 rounded-lg transition-colors"
+                        >
+                          <span>Screen</span>
+                          <ArrowRight size={12} />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );

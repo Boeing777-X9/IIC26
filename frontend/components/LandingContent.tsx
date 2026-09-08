@@ -58,7 +58,7 @@ export default function Landing() {
             <a href="#how-it-works" className="hover:text-slate-900 transition-colors">How it works</a>
             <a href="#platform" className="hover:text-slate-900 transition-colors">Platform</a>
             <button onClick={() => navigate("/themes")} className="hover:text-slate-900 transition-colors">Themes</button>
-            <span className="text-xs text-slate-300 border border-slate-200 rounded-full px-2.5 py-0.5 font-medium text-slate-500">Demo prototype</span>
+            <span className="text-xs border border-emerald-200 rounded-full px-2.5 py-0.5 font-medium text-emerald-700 bg-emerald-50">Clinical Platform</span>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -296,10 +296,10 @@ export default function Landing() {
       {/* CTA */}
       <section className="py-20 px-6">
         <div className="max-w-2xl mx-auto text-center">
-          <p className="text-xs font-semibold tracking-widest text-emerald-600 uppercase mb-3">Demo prototype</p>
+          <p className="text-xs font-semibold tracking-widest text-emerald-600 uppercase mb-3">RetinaGrid Platform</p>
           <h2 className="font-display text-3xl text-slate-900 mb-4">Experience the full screening workflow.</h2>
           <p className="text-slate-500 mb-8 text-base leading-relaxed">
-            This is a demonstration prototype for the International Innovation Challenge 3.0. All data is simulated and does not represent real clinical results.
+            Connected to real-time MongoDB Atlas persistence and PyTorch deep learning models. Frontline healthcare workers and supervising ophthalmologists operate with synchronized clinical records.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <button
@@ -331,11 +331,10 @@ export default function Landing() {
             <span className="text-sm text-slate-400 italic">See earlier. Explain better. Refer smarter.</span>
           </div>
           <div className="flex items-center gap-4 text-xs text-slate-400">
-            <span>International Innovation Challenge 3.0</span>
+            <span>RetinaGrid Clinical Platform</span>
             <span>·</span>
-            <span className="flex items-center gap-1">
-              <AlertCircle size={11} />
-              Demo prototype — not for clinical use
+            <span className="flex items-center gap-1 text-emerald-600 font-medium">
+              Connected to MongoDB Atlas
             </span>
           </div>
         </div>

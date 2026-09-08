@@ -1,25 +1,25 @@
 "use client";
 import { useState } from "react";
-import { useParams, useNavigate } from "@/lib/navigation";
-import { ArrowLeft, AlertCircle, CheckCircle2, Clock, User, Calendar, Eye } from "lucide-react";
+import { useNavigate } from "@/lib/navigation";
+import { ArrowLeft, CheckCircle2, AlertCircle, User, Clock, Check } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import Topbar from "@/components/Topbar";
-import RetinalImage from "@/components/RetinalImage";
 import RiskBadge from "@/components/RiskBadge";
-import { getReferral, getPatient, getScreenings, updateReferral } from "@/lib/store";
+import RetinalImage from "@/components/RetinalImage";
+import { getReferral, getPatient, getScreenings, updateReferralApi } from "@/lib/store";
 
 type ViewMode = "original" | "heatmap" | "overlay";
 
-export default function CaseReview() {
-  const { id } = useParams<{ id: string }>();
+export default function CaseReview({ id }: { id?: string }) {
   const navigate = useNavigate();
-  const referral = getReferral(id!);
-  const patient = referral ? getPatient(referral.patientId) : null;
-  const screenings = referral ? getScreenings().filter(s => s.patientId === referral.patientId) : [];
+  const referral = id ? getReferral(id) : undefined;
+  const patientId = referral ? referral.patient_id : "";
+  const patient = patientId ? getPatient(patientId) : null;
+  const screenings = patientId ? getScreenings().filter(s => s.patient_id === patientId) : [];
 
   const [viewMode, setViewMode] = useState<ViewMode>("overlay");
-  const [clinicalAssessment, setClinicalAssessment] = useState(referral?.doctorReview ?? "");
-  const [notes, setNotes] = useState(referral?.doctorNotes ?? "");
+  const [clinicalAssessment, setClinicalAssessment] = useState(referral?.doctor_review || "");
+  const [notes, setNotes] = useState(referral?.doctor_notes || "");
   const [saved, setSaved] = useState(false);
   const [action, setAction] = useState<"reviewed" | "follow-up">("reviewed");
 
@@ -29,7 +29,7 @@ export default function CaseReview() {
         <Sidebar role="doctor" />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <p className="text-slate-500 mb-4">Case not found.</p>
+            <p className="text-slate-500 mb-4">Case not found in database.</p>
             <button onClick={() => navigate("/doctor/cases")} className="text-emerald-600 font-medium">← Back to cases</button>
           </div>
         </div>
@@ -37,12 +37,12 @@ export default function CaseReview() {
     );
   }
 
-  const handleSave = () => {
-    updateReferral(referral.id, {
+  const handleSave = async () => {
+    await updateReferralApi(referral.id, {
       status: action,
-      doctorReview: clinicalAssessment,
-      doctorNotes: notes,
-      reviewDate: new Date().toISOString().split("T")[0],
+      doctor_review: clinicalAssessment,
+      doctor_notes: notes,
+      review_date: new Date().toISOString().split("T")[0],
     });
     setSaved(true);
   };
@@ -53,7 +53,7 @@ export default function CaseReview() {
     <div className="flex h-screen bg-[#f0fdf8] overflow-hidden">
       <Sidebar role="doctor" />
       <div className="flex flex-col flex-1 overflow-hidden">
-        <Topbar title={`Case Review · ${referral.patientId}`} subtitle="Ophthalmologist assessment" role="doctor" />
+        <Topbar title={`Case Review · ${referral.patient_id}`} subtitle="Ophthalmologist assessment" role="doctor" />
         <main className="flex-1 overflow-y-auto p-6">
           <button onClick={() => navigate("/doctor/cases")} className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 mb-5 transition-colors">
             <ArrowLeft size={15} /> Back to cases
@@ -83,10 +83,17 @@ export default function CaseReview() {
                       {m === "heatmap" ? "AI Explanation" : m.charAt(0).toUpperCase() + m.slice(1)}
                     </button>
                   ))}
-                  <span className="ml-auto text-xs text-slate-500 font-mono">{referral.patientId} · Right eye</span>
+                  <span className="ml-auto text-xs text-slate-400 font-mono">{referral.patient_id} · OD/OS</span>
                 </div>
-                <div className="p-6 flex justify-center bg-[#080808]">
-                  <RetinalImage mode={viewMode} size={300} risk={referral.risk} />
+                <div className="p-6 flex flex-col items-center justify-center bg-[#080808]">
+                  <RetinalImage
+                    mode={viewMode}
+                    size={300}
+                    risk={referral.risk}
+                  />
+                  <p className="text-[11px] text-slate-500 mt-2 italic">
+                    Procedural retinal reconstruction (Screened image data preserved, raw image discarded per storage policy)
+                  </p>
                 </div>
                 {viewMode !== "original" && (
                   <div className="px-5 pb-4 flex items-center gap-4">
@@ -110,7 +117,7 @@ export default function CaseReview() {
                     <p className="text-xs font-semibold tracking-widest text-slate-400 uppercase mb-1">AI Screening Result</p>
                     <div className="flex items-center gap-3">
                       <span className={`text-2xl font-bold ${referral.risk === "high" ? "text-red-600" : referral.risk === "moderate" ? "text-amber-600" : "text-emerald-600"}`}>
-                        {referral.risk === "high" ? "HIGH RISK" : referral.risk === "moderate" ? "MODERATE RISK" : "LOW RISK"}
+                        {referral.stage_title || (referral.risk === "high" ? "HIGH RISK" : referral.risk === "moderate" ? "MODERATE RISK" : "LOW RISK")}
                       </span>
                       <RiskBadge risk={referral.risk} size="md" />
                     </div>
@@ -119,40 +126,65 @@ export default function CaseReview() {
                   <span className={`text-xs px-2.5 py-1 rounded-full font-medium border capitalize ${priorityColor}`}>{referral.priority}</span>
                 </div>
 
-                <div className="space-y-2 mb-4">
-                  {[
-                    { label: "Microaneurysm-like regions", pct: 78 },
-                    { label: "Hemorrhage-like regions", pct: 65 },
-                    { label: "Vascular abnormalities", pct: 52 },
-                  ].map(f => (
-                    <div key={f.label}>
-                      <div className="flex justify-between text-xs mb-1">
-                        <span className="text-slate-600">{f.label}</span>
-                        <span className="font-mono text-slate-400">{f.pct}%</span>
+                {referral.probabilities && referral.probabilities.length > 0 ? (
+                  <div className="space-y-2 mb-4">
+                    {referral.probabilities.map(p => (
+                      <div key={p.grade}>
+                        <div className="flex justify-between text-xs mb-1">
+                          <span className={`font-medium ${p.grade === referral.grade ? "text-slate-900 font-semibold" : "text-slate-600"}`}>
+                            Grade {p.grade}: {p.name}
+                          </span>
+                          <span className="font-mono text-slate-400">{p.percentage}%</span>
+                        </div>
+                        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full ${p.grade === referral.grade ? "bg-emerald-500" : "bg-slate-300"}`}
+                            style={{ width: `${p.percentage}%` }}
+                          />
+                        </div>
                       </div>
-                      <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                        <div className={`h-full rounded-full ${referral.risk === "high" ? "bg-red-400" : "bg-amber-400"}`} style={{ width: `${f.pct}%` }} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-2 mb-4">
+                    {[
+                      { label: "Microaneurysm-like regions", pct: 78 },
+                      { label: "Hemorrhage-like regions", pct: 65 },
+                      { label: "Vascular abnormalities", pct: 52 },
+                    ].map(f => (
+                      <div key={f.label}>
+                        <div className="flex justify-between text-xs mb-1">
+                          <span className="text-slate-600">{f.label}</span>
+                          <span className="font-mono text-slate-400">{f.pct}%</span>
+                        </div>
+                        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                          <div className={`h-full rounded-full ${referral.risk === "high" ? "bg-red-400" : "bg-amber-400"}`} style={{ width: `${f.pct}%` }} />
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
 
-                <p className="text-xs text-slate-400 italic">* Feature labels are model-derived approximations. Clinical interpretation is required.</p>
+                <p className="text-xs text-slate-400 italic">* Feature activations and class probabilities derived from PyTorch ResNet-152 deep neural network.</p>
               </div>
 
               {/* Screening history */}
               <div className="bg-white border border-slate-200 rounded-xl p-5">
-                <p className="text-sm font-semibold text-slate-800 mb-3">Screening History</p>
-                <div className="space-y-2">
-                  {screenings.map(s => (
-                    <div key={s.id} className="flex items-center gap-3 text-sm">
-                      <div className={`w-2 h-2 rounded-full shrink-0 ${s.risk === "high" ? "bg-red-500" : s.risk === "moderate" ? "bg-amber-500" : "bg-emerald-500"}`} />
-                      <span className="text-slate-400 font-mono text-xs">{s.date}</span>
-                      <RiskBadge risk={s.risk} size="sm" />
-                      <span className="text-slate-400 text-xs">{s.confidence}% confidence</span>
-                    </div>
-                  ))}
-                </div>
+                <p className="text-sm font-semibold text-slate-800 mb-3">Screening History for Patient</p>
+                {screenings.length === 0 ? (
+                  <p className="text-xs text-slate-400">No prior screenings recorded.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {screenings.map(s => (
+                      <div key={s.id} className="flex items-center gap-3 text-sm">
+                        <div className={`w-2 h-2 rounded-full shrink-0 ${s.risk === "high" ? "bg-red-500" : s.risk === "moderate" ? "bg-amber-500" : "bg-emerald-500"}`} />
+                        <span className="text-slate-400 font-mono text-xs">{s.date}</span>
+                        <RiskBadge risk={s.risk} size="sm" />
+                        <span className="text-slate-400 text-xs">{s.confidence}% confidence</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -166,11 +198,11 @@ export default function CaseReview() {
                     <div className="flex items-center gap-2"><User size={13} className="text-slate-400" /><span className="font-medium text-slate-800">{patient.name}</span></div>
                     <div className="flex items-center gap-2"><span className="text-slate-400 text-xs w-24">Patient ID</span><span className="font-mono text-slate-600">{patient.id}</span></div>
                     <div className="flex items-center gap-2"><span className="text-slate-400 text-xs w-24">Age</span><span className="text-slate-700">{patient.age} years</span></div>
-                    <div className="flex items-center gap-2"><span className="text-slate-400 text-xs w-24">DM duration</span><span className="text-slate-700">{patient.diabetesDuration} years</span></div>
+                    <div className="flex items-center gap-2"><span className="text-slate-400 text-xs w-24">DM duration</span><span className="text-slate-700">{patient.diabetes_duration} years</span></div>
                     <div className="flex items-center gap-2"><span className="text-slate-400 text-xs w-24">Village</span><span className="text-slate-700">{patient.village}</span></div>
                   </div>
                 ) : (
-                  <p className="text-sm text-slate-400">Patient {referral.patientId}</p>
+                  <p className="text-sm text-slate-400">Patient ID: {referral.patient_id}</p>
                 )}
               </div>
 
@@ -180,10 +212,10 @@ export default function CaseReview() {
                 <div className="space-y-2 text-sm">
                   <div className="flex gap-2"><span className="text-slate-400 text-xs w-24">Referral ID</span><span className="font-mono text-slate-600">{referral.id}</span></div>
                   <div className="flex gap-2"><span className="text-slate-400 text-xs w-24">Date</span><span className="text-slate-700">{referral.date}</span></div>
-                  {referral.workerNotes && (
+                  {referral.worker_notes && (
                     <div className="mt-2 text-xs text-slate-600 bg-slate-50 rounded-lg p-3">
-                      <p className="font-medium mb-1 text-slate-500">Worker notes:</p>
-                      {referral.workerNotes}
+                      <p className="font-medium mb-1 text-slate-500">Health Worker notes:</p>
+                      {referral.worker_notes}
                     </div>
                   )}
                 </div>

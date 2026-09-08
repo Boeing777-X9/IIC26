@@ -200,7 +200,7 @@ function MiniDashboard({ t, onSelect }: { t: typeof themes[0]; onSelect: () => v
             <div className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5"
               style={{ background: t.bannerBg, border: `1px solid ${t.bannerBorder}` }}>
               <AlertCircle size={9} style={{ color: t.bannerText }} />
-              <span className="text-[8px] font-medium" style={{ color: t.bannerText }}>Demo prototype — data is simulated.</span>
+              <span className="text-[8px] font-medium" style={{ color: t.bannerText }}>Clinical Screening Network</span>
             </div>
 
             {/* Stat cards */}

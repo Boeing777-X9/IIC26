@@ -11,6 +11,7 @@ import Topbar from "@/components/Topbar";
 import StatCard from "@/components/StatCard";
 import RiskBadge from "@/components/RiskBadge";
 import RetinalImage from "@/components/RetinalImage";
+import { SpotlightCard, ShinyText } from "@/components/reactbits";
 import {
   getScreenings, getPatient, getReferrals, getActiveWorker, DEFAULT_WORKER,
   fetchScreeningsApi, fetchReferralsApi, fetchPatientsApi,
@@ -67,10 +68,13 @@ export default function WorkerDashboard() {
         />
         <main className="flex-1 overflow-y-auto p-6 space-y-5">
 
-          {/* Active Worker Permissions Badge Card */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          {/* Active Worker Permissions Badge Card with SpotlightCard */}
+          <SpotlightCard
+            spotlightColor="rgba(16, 185, 129, 0.2)"
+            className="bg-white/95 border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+          >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-sm shrink-0 border border-emerald-100">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-sm shrink-0 border border-emerald-100 shadow-xs">
                 {activeWorker.name.split(" ").map(n => n[0]).join("")}
               </div>
               <div>
@@ -104,14 +108,14 @@ export default function WorkerDashboard() {
             {perms.can_screen && (
               <button
                 onClick={() => navigate("/health-worker/screening/new")}
-                className="inline-flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-semibold hover:bg-emerald-700 transition-colors shadow-sm shrink-0"
+                className="inline-flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-semibold hover:bg-emerald-700 transition-colors shadow-sm shrink-0 cursor-pointer"
               >
                 <Plus size={14} /> New Screening
               </button>
             )}
-          </div>
+          </SpotlightCard>
 
-          {/* Stats */}
+          {/* Stats with SpotlightCard and CountUp */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard label="Screenings today" value={mounted ? todayCount : 0} icon={<Eye size={18} />} sub="Recorded in database" accent="teal" />
             <StatCard label="Requiring referral" value={mounted ? referralCount : 0} icon={<Send size={18} />} sub="Active referrals" accent="amber" />
@@ -120,14 +124,17 @@ export default function WorkerDashboard() {
           </div>
 
           <div className="grid lg:grid-cols-3 gap-5">
-            {/* Recent Screenings Table */}
-            <div className="lg:col-span-2 bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
+            {/* Recent Screenings Table with SpotlightCard */}
+            <SpotlightCard
+              spotlightColor="rgba(6, 182, 212, 0.15)"
+              className="lg:col-span-2 bg-white/95 border-slate-100 rounded-2xl overflow-hidden shadow-sm p-0"
+            >
               <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
                 <div>
                   <h2 className="font-semibold text-slate-800">Recorded Retinal Screenings</h2>
                   <p className="text-xs text-slate-400">Clinical metrics saved in database</p>
                 </div>
-                <button onClick={() => navigate("/health-worker/history")} className="text-xs text-emerald-600 hover:text-emerald-700 flex items-center gap-1 font-medium">
+                <button onClick={() => navigate("/health-worker/history")} className="text-xs text-emerald-600 hover:text-emerald-700 flex items-center gap-1 font-medium cursor-pointer">
                   View all <ChevronRight size={12} />
                 </button>
               </div>
@@ -172,7 +179,7 @@ export default function WorkerDashboard() {
                           <td className="px-4 py-3.5">
                             <button
                               onClick={() => navigate("/health-worker/screening/new")}
-                              className="text-xs text-emerald-600 hover:text-emerald-700 font-medium flex items-center gap-1"
+                              className="text-xs text-emerald-600 hover:text-emerald-700 font-medium flex items-center gap-1 cursor-pointer"
                             >
                               New <ArrowRight size={11} />
                             </button>
@@ -188,34 +195,43 @@ export default function WorkerDashboard() {
                   </div>
                 )}
               </div>
-            </div>
+            </SpotlightCard>
 
             {/* Right column: Quick AI Screening Card + Risk Distribution */}
             <div className="space-y-4">
-              <div
-                className="bg-white rounded-2xl border border-slate-100 overflow-hidden cursor-pointer hover:shadow-md transition-all group"
-                onClick={() => navigate("/health-worker/screening/new")}
+              <SpotlightCard
+                spotlightColor="rgba(16, 185, 129, 0.2)"
+                className="bg-white/95 rounded-2xl border border-slate-100 overflow-hidden cursor-pointer hover:shadow-md transition-all group p-5"
               >
-                <div className="p-5">
+                <div onClick={() => navigate("/health-worker/screening/new")}>
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="w-8 h-8 rounded-xl bg-emerald-500 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-500 flex items-center justify-center shadow-xs">
                       <Zap size={15} className="text-white" />
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-slate-800">New AI Screening</p>
+                      <ShinyText
+                        text="New AI Screening"
+                        className="text-xs font-bold text-slate-900"
+                        color="#0f172a"
+                        shineColor="#10b981"
+                        speed={2.5}
+                      />
                       <p className="text-[10px] text-slate-400">Inference with Grad-CAM visualization</p>
                     </div>
                   </div>
                   <div className="bg-slate-900 rounded-xl overflow-hidden flex items-center justify-center mb-3" style={{ height: 120 }}>
                     <RetinalImage mode="overlay" size={110} risk="high" />
                   </div>
-                  <button className="w-full bg-emerald-500 text-white py-2 rounded-xl text-sm font-semibold hover:bg-emerald-600 transition-colors flex items-center justify-center gap-2">
+                  <button className="w-full bg-emerald-600 text-white py-2 rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm">
                     <Plus size={14} /> Start Screening
                   </button>
                 </div>
-              </div>
+              </SpotlightCard>
 
-              <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
+              <SpotlightCard
+                spotlightColor="rgba(245, 158, 11, 0.18)"
+                className="bg-white/95 rounded-2xl border border-slate-100 p-5 shadow-sm"
+              >
                 <p className="text-xs font-bold text-slate-800 uppercase tracking-wide mb-3">Risk Distribution</p>
                 <div className="space-y-2.5">
                   {[
@@ -238,7 +254,7 @@ export default function WorkerDashboard() {
                     );
                   })}
                 </div>
-              </div>
+              </SpotlightCard>
             </div>
           </div>
 

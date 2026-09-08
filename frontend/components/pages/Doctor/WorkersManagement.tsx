@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import Topbar from "@/components/Topbar";
+import { SpotlightCard, ShinyText, CountUp } from "@/components/reactbits";
 import {
   Worker,
   WorkerPermissions,
@@ -204,8 +205,11 @@ export default function WorkersManagement() {
               </div>
             )}
 
-            {/* Header + Stats Banner */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+            {/* Header + Stats Banner with SpotlightCard */}
+            <SpotlightCard
+              spotlightColor="rgba(16, 185, 129, 0.2)"
+              className="bg-white/95 border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4"
+            >
               <div>
                 <div className="flex items-center gap-2.5 mb-1.5">
                   <span className="text-xs font-semibold tracking-wider uppercase text-emerald-700">Root Governance</span>
@@ -214,7 +218,13 @@ export default function WorkersManagement() {
                     <span className="capitalize">{dbStatus.engine}</span>: {dbStatus.database}
                   </div>
                 </div>
-                <h1 className="text-2xl font-bold text-slate-900">Healthcare Worker Portal & Permissions</h1>
+                <ShinyText
+                  text="Healthcare Worker Portal & Permissions"
+                  className="text-2xl font-bold text-slate-900 block"
+                  color="#0f172a"
+                  shineColor="#10b981"
+                  speed={3}
+                />
                 <p className="text-sm text-slate-500 mt-1">
                   Manage authorized field screeners, govern access capabilities, and configure clinical screening boundaries.
                 </p>
@@ -222,45 +232,63 @@ export default function WorkersManagement() {
 
               <button
                 onClick={openAddModal}
-                className="flex items-center gap-2 bg-emerald-600 text-white px-5 py-3 rounded-xl font-medium hover:bg-emerald-700 transition-all shadow-sm text-sm shrink-0"
+                className="flex items-center gap-2 bg-emerald-600 text-white px-5 py-3 rounded-xl font-medium hover:bg-emerald-700 transition-all shadow-sm text-sm shrink-0 cursor-pointer"
               >
                 <UserPlus size={16} /> Register Healthcare Worker
               </button>
-            </div>
+            </SpotlightCard>
 
-            {/* Metric Overview Cards */}
+            {/* Metric Overview Cards with SpotlightCards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+              <SpotlightCard
+                spotlightColor="rgba(16, 185, 129, 0.18)"
+                className="bg-white/95 border-slate-200 rounded-2xl p-4 shadow-sm"
+              >
                 <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Registered Staff</p>
                 <div className="flex items-baseline justify-between mt-2">
-                  <span className="text-2xl font-bold text-slate-900">{workers.length}</span>
+                  <span className="text-2xl font-bold text-slate-900">
+                    {mounted ? <CountUp to={workers.length} duration={1.2} /> : workers.length}
+                  </span>
                   <span className="text-xs text-emerald-600 font-semibold">{activeCount} active</span>
                 </div>
-              </div>
+              </SpotlightCard>
 
-              <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+              <SpotlightCard
+                spotlightColor="rgba(16, 185, 129, 0.18)"
+                className="bg-white/95 border-slate-200 rounded-2xl p-4 shadow-sm"
+              >
                 <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Authorized Screeners</p>
                 <div className="flex items-baseline justify-between mt-2">
-                  <span className="text-2xl font-bold text-emerald-700">{screenerCount}</span>
+                  <span className="text-2xl font-bold text-emerald-700">
+                    {mounted ? <CountUp to={screenerCount} duration={1.2} /> : screenerCount}
+                  </span>
                   <span className="text-xs text-slate-400">Can run PyTorch AI</span>
                 </div>
-              </div>
+              </SpotlightCard>
 
-              <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+              <SpotlightCard
+                spotlightColor="rgba(59, 130, 246, 0.18)"
+                className="bg-white/95 border-slate-200 rounded-2xl p-4 shadow-sm"
+              >
                 <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Referral Dispatches</p>
                 <div className="flex items-baseline justify-between mt-2">
-                  <span className="text-2xl font-bold text-blue-700">{referralCount}</span>
+                  <span className="text-2xl font-bold text-blue-700">
+                    {mounted ? <CountUp to={referralCount} duration={1.2} /> : referralCount}
+                  </span>
                   <span className="text-xs text-slate-400">Can flag to doctor</span>
                 </div>
-              </div>
+              </SpotlightCard>
 
-              <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+              <SpotlightCard
+                spotlightColor="rgba(148, 163, 184, 0.15)"
+                className="bg-white/95 border-slate-200 rounded-2xl p-4 shadow-sm"
+              >
                 <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Storage Policy</p>
                 <div className="flex items-baseline justify-between mt-2">
                   <span className="text-sm font-semibold text-slate-800">Metrics Only</span>
                   <span className="text-[11px] text-slate-400">Zero image persistence</span>
                 </div>
-              </div>
+              </SpotlightCard>
             </div>
 
             {/* Workers Table View */}

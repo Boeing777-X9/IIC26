@@ -10,6 +10,7 @@ import Sidebar from "@/components/Sidebar";
 import Topbar from "@/components/Topbar";
 import StatCard from "@/components/StatCard";
 import RiskBadge from "@/components/RiskBadge";
+import { SpotlightCard, ShinyText } from "@/components/reactbits";
 import {
   getReferrals,
   getPatient,
@@ -58,15 +59,24 @@ export default function DoctorDashboard() {
         <Topbar title="Doctor Overview" subtitle="Dr. Arjun Rao · Ophthalmology Lead & Administrator" role="doctor" />
         <main className="flex-1 overflow-y-auto p-6 space-y-5">
 
-          {/* Database & Root Status Banner */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+          {/* Database & Root Status Banner with ReactBits SpotlightCard */}
+          <SpotlightCard
+            spotlightColor="rgba(16, 185, 129, 0.2)"
+            className="bg-white/95 border-emerald-100 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+          >
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100 shadow-xs">
                 <Database size={18} />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold text-slate-900 text-sm">Real Clinical Database Active</span>
+                  <ShinyText
+                    text="Real Clinical Database Active"
+                    className="font-bold text-slate-900 text-sm"
+                    color="#0f172a"
+                    shineColor="#10b981"
+                    speed={3}
+                  />
                   <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-mono font-medium">
                     {mounted ? `${dbStatus.engine.toUpperCase()}: ${dbStatus.database}` : "MONGODB: retinix"}
                   </span>
@@ -80,14 +90,14 @@ export default function DoctorDashboard() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => navigate("/doctor/workers")}
-                className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3.5 py-2 rounded-xl transition-colors shrink-0"
+                className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3.5 py-2 rounded-xl transition-colors shrink-0 cursor-pointer"
               >
                 <Shield size={13} /> Manage Healthcare Workers {mounted && workers.length > 0 ? `(${workers.length})` : ""}
               </button>
             </div>
-          </div>
+          </SpotlightCard>
 
-          {/* Stats */}
+          {/* Stats with SpotlightCard and CountUp */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard label="Cases awaiting review" value={mounted ? awaiting : 0} icon={<ClipboardList size={18} />} accent="amber" />
             <StatCard label="Priority cases" value={mounted ? highPriority : 0} icon={<AlertCircle size={18} />} accent="red" />
@@ -96,14 +106,17 @@ export default function DoctorDashboard() {
           </div>
 
           <div className="grid lg:grid-cols-3 gap-5">
-            {/* Cases requiring attention table */}
-            <div className="lg:col-span-2 bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
+            {/* Cases requiring attention table with SpotlightCard */}
+            <SpotlightCard
+              spotlightColor="rgba(6, 182, 212, 0.15)"
+              className="lg:col-span-2 bg-white/95 border-slate-100 rounded-2xl overflow-hidden shadow-sm p-0"
+            >
               <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
                 <div>
                   <h2 className="font-semibold text-slate-800">Cases Requiring Specialist Evaluation</h2>
                   <p className="text-xs text-slate-400">Referrals forwarded from field healthcare workers</p>
                 </div>
-                <button onClick={() => navigate("/doctor/cases")} className="text-xs text-emerald-600 hover:text-emerald-700 flex items-center gap-1 font-medium">
+                <button onClick={() => navigate("/doctor/cases")} className="text-xs text-emerald-600 hover:text-emerald-700 flex items-center gap-1 font-medium cursor-pointer">
                   View all cases <ChevronRight size={12} />
                 </button>
               </div>
@@ -111,7 +124,7 @@ export default function DoctorDashboard() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-slate-50 text-slate-400 text-xs font-medium uppercase tracking-wider">
+                    <tr className="border-b border-slate-50 text-slate-400 text-xs font-medium uppercase tracking-wider bg-slate-50/40">
                       {["Patient ID", "Date", "Risk", "Stage", "AI Confidence", "Priority", "Status", "Action"].map(h => (
                         <th key={h} className="text-left px-4 py-3 whitespace-nowrap">{h}</th>
                       ))}
@@ -142,7 +155,7 @@ export default function DoctorDashboard() {
                           <td className="px-4 py-3.5">
                             <button
                               onClick={() => navigate(`/doctor/cases/${r.id}`)}
-                              className="text-xs bg-emerald-50 text-emerald-700 hover:bg-emerald-100 px-3 py-1 rounded-lg font-medium inline-flex items-center gap-1 transition-colors"
+                              className="text-xs bg-emerald-50 text-emerald-700 hover:bg-emerald-100 px-3 py-1 rounded-lg font-medium inline-flex items-center gap-1 transition-colors cursor-pointer"
                             >
                               Review <ChevronRight size={11} />
                             </button>
@@ -158,11 +171,14 @@ export default function DoctorDashboard() {
                   </div>
                 )}
               </div>
-            </div>
+            </SpotlightCard>
 
-            {/* Right sidebar: Quick actions & Priority Breakdown */}
+            {/* Right sidebar with SpotlightCards */}
             <div className="space-y-4">
-              <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+              <SpotlightCard
+                spotlightColor="rgba(245, 158, 11, 0.18)"
+                className="bg-white/95 border-slate-100 rounded-2xl p-5 shadow-sm"
+              >
                 <p className="text-xs font-bold text-slate-800 uppercase tracking-wide mb-3">Priority Breakdown</p>
                 {[
                   { label: "Priority", count: highPriority, color: "bg-red-500", pct: awaiting ? Math.round((highPriority / awaiting) * 100) : 0 },
@@ -179,13 +195,16 @@ export default function DoctorDashboard() {
                     </div>
                   </div>
                 ))}
-              </div>
+              </SpotlightCard>
 
-              <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm space-y-3">
+              <SpotlightCard
+                spotlightColor="rgba(16, 185, 129, 0.18)"
+                className="bg-white/95 border-slate-100 rounded-2xl p-5 shadow-sm space-y-3"
+              >
                 <p className="text-xs font-bold text-slate-800 uppercase tracking-wide mb-1">Doctor Actions</p>
                 <button
                   onClick={() => navigate("/doctor/cases")}
-                  className="w-full flex items-center justify-between p-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 transition-colors text-xs font-semibold"
+                  className="w-full flex items-center justify-between p-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 transition-colors text-xs font-semibold cursor-pointer"
                 >
                   <span className="flex items-center gap-2">
                     <Stethoscope size={15} /> Open Review Queue
@@ -194,14 +213,14 @@ export default function DoctorDashboard() {
                 </button>
                 <button
                   onClick={() => navigate("/doctor/analytics")}
-                  className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 transition-colors text-xs font-semibold"
+                  className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 transition-colors text-xs font-semibold cursor-pointer"
                 >
                   <span className="flex items-center gap-2">
                     <TrendingUp size={15} /> Clinical Analytics
                   </span>
                   <ChevronRight size={14} />
                 </button>
-              </div>
+              </SpotlightCard>
             </div>
           </div>
         </main>

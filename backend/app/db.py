@@ -23,14 +23,18 @@ logging.basicConfig(level=logging.INFO)
 
 # MongoDB Configuration
 MONGODB_URI = os.environ.get("MONGODB_URI", "mongodb://localhost:27017")
-MONGODB_DB_NAME = os.environ.get("MONGODB_DB_NAME", "retinagrid")
+MONGODB_DB_NAME = os.environ.get("MONGODB_DB_NAME", "retinix")
 
 _mongo_client = None
 _mongo_db = None
 _use_mongodb = False
 
 # SQLite Fallback path if MongoDB is not reachable
-SQLITE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "retinagrid.db"))
+SQLITE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "retinix.db"))
+if not os.path.exists(SQLITE_PATH):
+    _legacy_db = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "retinagrid.db"))
+    if os.path.exists(_legacy_db):
+        SQLITE_PATH = _legacy_db
 
 def sanitize_uri(uri: str) -> str:
     if "@" in uri:

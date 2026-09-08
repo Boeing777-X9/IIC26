@@ -35,7 +35,7 @@ export default function WorkersManagement() {
   const [dbStatus, setDbStatus] = useState<{ engine: string; connected: boolean; database: string; message: string }>({
     engine: "loading...",
     connected: false,
-    database: "retinagrid",
+    database: "retinix",
     message: "Checking database..."
   });
   const [searchQuery, setSearchQuery] = useState("");

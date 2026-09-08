@@ -38,7 +38,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="RetinaGrid DR Screening XAI API",
+    title="Retinix DR Screening XAI API",
     description="Explainable Deep Learning API with Healthcare Worker Permissions Management, MongoDB persistence, and Clinical Roster",
     version="2.1.0",
     lifespan=lifespan
@@ -63,7 +63,7 @@ app.add_middleware(
 def health_check():
     return {
         "status": "healthy",
-        "service": "RetinaGrid DR Screening XAI API",
+        "service": "Retinix DR Screening XAI API",
         "version": "2.1.0"
     }
 

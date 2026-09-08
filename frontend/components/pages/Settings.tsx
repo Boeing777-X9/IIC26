@@ -9,7 +9,7 @@ export default function Settings({ role }: { role: "worker" | "doctor" }) {
   const [dbStatus, setDbStatus] = useState<{ engine: string; connected: boolean; database: string; message: string }>({
     engine: "loading...",
     connected: false,
-    database: "retinagrid",
+    database: "retinix",
     message: "Connecting..."
   });
   const [activeWorker, setActiveWorker] = useState<any>(null);
@@ -127,7 +127,7 @@ export default function Settings({ role }: { role: "worker" | "doctor" }) {
             <div className="flex items-start gap-3 bg-slate-50 border border-slate-200 rounded-2xl p-4">
               <Info size={16} className="text-slate-400 shrink-0 mt-0.5" />
               <p className="text-xs text-slate-500 leading-relaxed">
-                RetinaGrid connects frontline healthcare screeners with supervising ophthalmologists using a PyTorch ResNet-152 deep learning inference pipeline, Grad-CAM explainability, and role-based permissions management.
+                Retinix connects frontline healthcare screeners with supervising ophthalmologists using a PyTorch ResNet-152 deep learning inference pipeline, Grad-CAM explainability, and role-based permissions management.
               </p>
             </div>
           </div>

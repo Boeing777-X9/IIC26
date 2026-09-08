@@ -147,7 +147,7 @@ function MiniDashboard({ t, onSelect }: { t: typeof themes[0]; onSelect: () => v
             <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: t.accent }}>
               <Eye size={12} className="text-white" />
             </div>
-            <span className="text-[11px] font-bold" style={{ color: t.text }}>RetinaGrid</span>
+            <span className="text-[11px] font-bold" style={{ color: t.text }}>Retinix</span>
           </div>
 
           <div className="px-3 mb-1.5">
@@ -270,7 +270,7 @@ export default function ThemePreview() {
             <div className="w-8 h-8 rounded-xl bg-emerald-600 flex items-center justify-center">
               <Eye size={16} className="text-white" />
             </div>
-            <span className="font-bold text-slate-800 text-lg">RetinaGrid</span>
+            <span className="font-bold text-slate-800 text-lg">Retinix</span>
           </div>
           <h1 className="text-2xl font-bold text-slate-900 mb-2">Choose a colour theme</h1>
           <p className="text-slate-500 text-sm">All light themes — no dark mode. Each shown as a live healthcare worker dashboard preview.</p>

@@ -31,7 +31,7 @@ export default function DoctorDashboard() {
   const [dbStatus, setDbStatus] = useState({
     engine: "loading...",
     connected: false,
-    database: "retinagrid",
+    database: "retinix",
     message: "Connecting to database..."
   });
 
@@ -69,7 +69,7 @@ export default function DoctorDashboard() {
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-slate-900 text-sm">Real Clinical Database Active</span>
                   <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-mono font-medium">
-                    {mounted ? `${dbStatus.engine.toUpperCase()}: ${dbStatus.database}` : "MONGODB: retinagrid"}
+                    {mounted ? `${dbStatus.engine.toUpperCase()}: ${dbStatus.database}` : "MONGODB: retinix"}
                   </span>
                 </div>
                 <p className="text-xs text-slate-500 mt-0.5">

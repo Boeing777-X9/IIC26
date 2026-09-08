@@ -52,7 +52,7 @@ export default function Landing() {
             <div className="w-7 h-7 rounded-lg bg-emerald-500 flex items-center justify-center">
               <Eye size={14} className="text-white" />
             </div>
-            <span className="font-semibold text-slate-900 tracking-tight">RetinaGrid</span>
+            <span className="font-semibold text-slate-900 tracking-tight">Retinix</span>
           </div>
           <div className="hidden md:flex items-center gap-6 text-sm text-slate-500">
             <a href="#how-it-works" className="hover:text-slate-900 transition-colors">How it works</a>
@@ -90,7 +90,7 @@ export default function Landing() {
                 Bring expert-level retinal screening closer to every community.
               </h1>
               <p className="text-slate-500 text-lg leading-relaxed mb-8 max-w-xl">
-                RetinaGrid helps rural healthcare workers screen retinal images for diabetic retinopathy and understand the evidence behind every AI-assisted result.
+                Retinix helps rural healthcare workers screen retinal images for diabetic retinopathy and understand the evidence behind every AI-assisted result.
               </p>
               <div className="flex flex-wrap gap-3">
                 <button
@@ -172,9 +172,9 @@ export default function Landing() {
               </div>
             </div>
 
-            {/* RetinaGrid */}
+            {/* Retinix */}
             <div className="border border-emerald-200 bg-emerald-50/30 rounded-2xl p-6">
-              <p className="text-xs font-semibold tracking-widest text-emerald-600 uppercase mb-5">RetinaGrid pathway</p>
+              <p className="text-xs font-semibold tracking-widest text-emerald-600 uppercase mb-5">Retinix pathway</p>
               <div className="space-y-3">
                 {[
                   "Patient attends local screening camp",
@@ -196,7 +196,7 @@ export default function Landing() {
           <div className="mt-8 flex items-start gap-3 bg-slate-50 border border-slate-200 rounded-xl p-4">
             <Info size={16} className="text-slate-400 shrink-0 mt-0.5" />
             <p className="text-sm text-slate-500">
-              RetinaGrid is an AI-assisted screening tool. It does not replace ophthalmologists. All clinical assessments and diagnoses are made by qualified eye-care professionals.
+              Retinix is an AI-assisted screening tool. It does not replace ophthalmologists. All clinical assessments and diagnoses are made by qualified eye-care professionals.
             </p>
           </div>
         </div>
@@ -207,7 +207,7 @@ export default function Landing() {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
             <p className="text-xs font-semibold tracking-widest text-emerald-600 uppercase mb-3">Workflow</p>
-            <h2 className="font-display text-3xl text-slate-900">How RetinaGrid works</h2>
+            <h2 className="font-display text-3xl text-slate-900">How Retinix works</h2>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
             {steps.map((s, i) => (
@@ -296,7 +296,7 @@ export default function Landing() {
       {/* CTA */}
       <section className="py-20 px-6">
         <div className="max-w-2xl mx-auto text-center">
-          <p className="text-xs font-semibold tracking-widest text-emerald-600 uppercase mb-3">RetinaGrid Platform</p>
+          <p className="text-xs font-semibold tracking-widest text-emerald-600 uppercase mb-3">Retinix Platform</p>
           <h2 className="font-display text-3xl text-slate-900 mb-4">Experience the full screening workflow.</h2>
           <p className="text-slate-500 mb-8 text-base leading-relaxed">
             Connected to real-time MongoDB Atlas persistence and PyTorch deep learning models. Frontline healthcare workers and supervising ophthalmologists operate with synchronized clinical records.
@@ -326,12 +326,12 @@ export default function Landing() {
             <div className="w-6 h-6 rounded-md bg-emerald-500 flex items-center justify-center">
               <Eye size={12} className="text-white" />
             </div>
-            <span className="font-semibold text-slate-800 text-sm">RetinaGrid</span>
+            <span className="font-semibold text-slate-800 text-sm">Retinix</span>
             <span className="text-slate-300 text-sm">·</span>
             <span className="text-sm text-slate-400 italic">See earlier. Explain better. Refer smarter.</span>
           </div>
           <div className="flex items-center gap-4 text-xs text-slate-400">
-            <span>RetinaGrid Clinical Platform</span>
+            <span>Retinix Clinical Platform</span>
             <span>·</span>
             <span className="flex items-center gap-1 text-emerald-600 font-medium">
               Connected to MongoDB Atlas

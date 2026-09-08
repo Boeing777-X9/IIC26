@@ -75,7 +75,7 @@ export default function Sidebar({ role }: Props) {
             <Eye size={16} className="text-white" />
           </div>
           <div>
-            <span className="font-semibold text-slate-900 tracking-tight text-sm">RetinaGrid</span>
+            <span className="font-semibold text-slate-900 tracking-tight text-sm">Retinix</span>
             <span className="block text-[10px] text-slate-400 font-mono leading-none">Clinical Platform</span>
           </div>
         </Link>

@@ -89,13 +89,15 @@ class ModelService:
 
     def _find_checkpoint(self) -> str:
         candidates = [
+            os.environ.get("CHECKPOINT_PATH", ""),
             os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "ML", "classifier.pt")),
             os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "backend", "ML", "classifier.pt")),
             os.path.abspath("backend/ML/classifier.pt"),
             os.path.abspath("ML/classifier.pt"),
+            "/app/ML/classifier.pt",
         ]
         for p in candidates:
-            if os.path.exists(p):
+            if p and os.path.exists(p):
                 logger.info(f"Found model checkpoint at: {p}")
                 return p
         raise FileNotFoundError(f"Could not locate classifier.pt in candidates: {candidates}")

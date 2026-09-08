@@ -1,0 +1,32 @@
+.venv
+venv
+ENV
+env
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.coverage
+htmlcov
+tests/
+*.db
+*.sqlite
+*.sqlite3
+backend/retinagrid.db
+retinagrid.db
+retinix.db
+
+# Exclude training datasets and jupyter artifacts from image build
+ML/dataset/
+ML/.ipynb_checkpoints/
+ML/*.ipynb
+ML/*.bak
+ML/submission.csv
+
+# Exclude local credentials from image
+.env
+.env.*
+atlas-credentials.env

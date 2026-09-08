@@ -11,11 +11,14 @@ import { getReferrals, getPatient, fetchReferralsApi, fetchPatientsApi, Referral
 export default function Cases() {
   const navigate = useNavigate();
   const [referrals, setReferrals] = useState<Referral[]>(getReferrals());
+  const [patients, setPatients] = useState<any[]>([]);
   const [filter, setFilter] = useState<"all" | "awaiting" | "reviewed">("awaiting");
 
   useEffect(() => {
-    fetchReferralsApi().then(setReferrals);
-    fetchPatientsApi();
+    Promise.all([fetchReferralsApi(), fetchPatientsApi()]).then(([refs, pts]) => {
+      setReferrals(refs);
+      setPatients(pts);
+    });
   }, []);
 
   const filtered = referrals.filter(r => {
@@ -54,7 +57,7 @@ export default function Cases() {
             )}
             {filtered.map(r => {
               const pId = r.patient_id || (r as any).patientId;
-              const patient = getPatient(pId);
+              const patient = patients.find(p => p.id === pId) || getPatient(pId);
               const isReviewed = r.status === "reviewed";
               const priorityColor =
                 r.priority === "priority"

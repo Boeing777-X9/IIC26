@@ -36,12 +36,13 @@ export default function WorkerDashboard() {
   const [activeWorker, setActiveWorkerState] = useState<Worker>(getActiveWorker());
   const [screenings, setScreenings] = useState<Screening[]>(getScreenings());
   const [referrals, setReferrals] = useState<Referral[]>(getReferrals());
+  const [patients, setPatients] = useState<any[]>([]);
 
   useEffect(() => {
     setActiveWorkerState(getActiveWorker());
     fetchScreeningsApi().then(setScreenings);
     fetchReferralsApi().then(setReferrals);
-    fetchPatientsApi();
+    fetchPatientsApi().then(setPatients);
   }, []);
 
   const today = new Date().toISOString().split("T")[0];
@@ -138,7 +139,7 @@ export default function WorkerDashboard() {
                 <tbody className="divide-y divide-slate-50">
                   {screenings.slice(0, 8).map(s => {
                     const pId = s.patient_id || (s as any).patientId;
-                    const patient = getPatient(pId);
+                    const patient = patients.find(p => p.id === pId) || getPatient(pId);
                     return (
                       <tr key={s.id} className="hover:bg-slate-50/50 transition-colors">
                         <td className="px-4 py-3.5 font-mono text-xs text-slate-700 font-semibold">

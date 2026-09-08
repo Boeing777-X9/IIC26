@@ -26,6 +26,7 @@ export default function DoctorDashboard() {
   const navigate = useNavigate();
   const [referrals, setReferrals] = useState<Referral[]>(getReferrals());
   const [workers, setWorkers] = useState<Worker[]>(getWorkers());
+  const [patients, setPatients] = useState<any[]>([]);
   const [dbStatus, setDbStatus] = useState({
     engine: "loading...",
     connected: false,
@@ -35,7 +36,7 @@ export default function DoctorDashboard() {
 
   useEffect(() => {
     fetchReferralsApi().then(setReferrals);
-    fetchPatientsApi();
+    fetchPatientsApi().then(setPatients);
     fetchWorkersApi().then(setWorkers);
     fetchDbStatusApi().then(setDbStatus);
   }, []);
@@ -112,7 +113,7 @@ export default function DoctorDashboard() {
                 <tbody className="divide-y divide-slate-50">
                   {needsAttention.map(r => {
                     const pId = r.patient_id || (r as any).patientId;
-                    const patient = getPatient(pId);
+                    const patient = patients.find(p => p.id === pId) || getPatient(pId);
                     const priorityColor = r.priority === "priority" ? "text-red-600 bg-red-50" : r.priority === "urgent" ? "text-amber-600 bg-amber-50" : "text-slate-600 bg-slate-50";
                     const statusMap: Record<string, string> = { pending: "Pending", viewed: "Viewed", "under-review": "Under Review" };
                     return (

@@ -59,3 +59,16 @@ datasets/
 **/dataset/
 **/datasets/
 
+# Local Databases & State
+*.db
+*.sqlite
+*.sqlite3
+retinagrid.db
+
+# Jupyter Checkpoints & Backups
+.ipynb_checkpoints/
+**/.ipynb_checkpoints/
+*.bak
+*.tmp
+
+

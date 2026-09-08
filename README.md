@@ -1,4 +1,4 @@
-# retinix: teaching a resnet to stare into the human eye so grandma doesn't go blind in tirunelveli.
+# retinix: teaching a resnet to catch diabetic retinopathy before vision loss becomes irreversible.
 
 > an explainable tele-triage system for diabetic retinopathy, built for frontline healthcare workers, community camps, and the ophthalmologists who back them up.
 

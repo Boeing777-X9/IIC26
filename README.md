@@ -232,6 +232,17 @@ open your browser:
 | `put` | `/api/referrals/{id}` | specialist updates review status and clinical notes |
 
 ---
+### why it matters
+
+retinix is designed around one simple idea: **screen closer to the
+patient, refer only when necessary, and keep a specialist in the loop.**
+
+- **faster:** ai-assisted screening in seconds
+- **smarter:** referrals prioritized by clinical risk
+- **clearer:** grad-cam makes predictions visually interpretable
+- **safer:** retinal images are processed ephemerally
+- **resilient:** sqlite fallback keeps screening functional offline
+- **scalable:** one specialist can oversee multiple screening centres
 
 ### the rally cry
 

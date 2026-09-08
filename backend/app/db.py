@@ -1,8 +1,27 @@
 import os
 import json
 import logging
+import hashlib
+import secrets
 from datetime import datetime
 from typing import List, Dict, Any, Optional
+
+DEFAULT_WORKER_PASSWORD = "retinix2026"
+
+def hash_password(password: str) -> str:
+    salt = secrets.token_hex(16)
+    key = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt.encode("utf-8"), 100000)
+    return f"{salt}:{key.hex()}"
+
+def verify_password(password: str, stored_hash: Optional[str]) -> bool:
+    if not stored_hash or ":" not in stored_hash:
+        return False
+    try:
+        salt, expected_hex = stored_hash.split(":", 1)
+        key = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt.encode("utf-8"), 100000)
+        return secrets.compare_digest(key.hex(), expected_hex)
+    except Exception:
+        return False
 
 # Load environment variables from backend/.env or root
 try:
@@ -73,8 +92,9 @@ def init_db():
         _mongo_db.screenings.create_index("id", unique=True)
         _mongo_db.referrals.create_index("id", unique=True)
 
-        # Seed default worker if empty
-        if _mongo_db.workers.count_documents({}) == 0:
+        # Seed default worker if missing
+        default_pwd_hash = hash_password(DEFAULT_WORKER_PASSWORD)
+        if _mongo_db.workers.find_one({"id": "HW-101"}) is None:
             _mongo_db.workers.insert_one({
                 "id": "HW-101",
                 "name": "Priya Venkat",
@@ -92,9 +112,16 @@ def init_db():
                     "can_export_data": True,
                     "allowed_locations": ["Tirunelveli", "Alangulam", "Tenkasi"]
                 },
+                "password_hash": default_pwd_hash,
                 "created_at": datetime.now().isoformat()
             })
             logger.info("Seeded initial healthcare worker Priya Venkat in MongoDB.")
+        else:
+            # Backfill any existing workers missing a password_hash
+            _mongo_db.workers.update_many(
+                {"password_hash": {"$exists": False}},
+                {"$set": {"password_hash": default_pwd_hash}}
+            )
 
         # Seed default patients if empty
         if _mongo_db.patients.count_documents({}) == 0:
@@ -117,7 +144,7 @@ def init_db():
         return False
 
 
-def _init_sqlite_fallback():
+def _ensure_sqlite_schema():
     import sqlite3
     conn = sqlite3.connect(SQLITE_PATH)
     cursor = conn.cursor()
@@ -125,8 +152,21 @@ def _init_sqlite_fallback():
     CREATE TABLE IF NOT EXISTS workers (
         id TEXT PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL, phone TEXT NOT NULL,
         role_title TEXT NOT NULL, clinic TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'active',
-        permissions TEXT NOT NULL, created_at TEXT NOT NULL
+        permissions TEXT NOT NULL, created_at TEXT NOT NULL, password_hash TEXT
     )""")
+    cursor.execute("PRAGMA table_info(workers)")
+    cols = [col[1] for col in cursor.fetchall()]
+    if "password_hash" not in cols:
+        cursor.execute("ALTER TABLE workers ADD COLUMN password_hash TEXT")
+        cursor.execute("UPDATE workers SET password_hash = ?", (hash_password(DEFAULT_WORKER_PASSWORD),))
+        conn.commit()
+    conn.close()
+
+def _init_sqlite_fallback():
+    _ensure_sqlite_schema()
+    import sqlite3
+    conn = sqlite3.connect(SQLITE_PATH)
+    cursor = conn.cursor()
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS patients (
         id TEXT PRIMARY KEY, name TEXT NOT NULL, age INTEGER NOT NULL, diabetes_duration INTEGER NOT NULL,
@@ -174,11 +214,11 @@ def _init_sqlite_fallback():
     conn.close()
 
 
-# ================= Workers CRUD =================
+# ================= Workers CRUD & Authentication =================
 
 def get_all_workers() -> List[Dict[str, Any]]:
     if _use_mongodb:
-        docs = list(_mongo_db.workers.find({}, {"_id": 0}))
+        docs = list(_mongo_db.workers.find({}, {"_id": 0, "password_hash": 0}))
         return docs
     import sqlite3
     conn = sqlite3.connect(SQLITE_PATH)
@@ -189,12 +229,16 @@ def get_all_workers() -> List[Dict[str, Any]]:
     for r in rows:
         d = dict(r)
         d["permissions"] = json.loads(d["permissions"])
+        d.pop("password_hash", None)
         result.append(d)
     return result
 
-def get_worker_by_id(worker_id: str) -> Optional[Dict[str, Any]]:
+def get_worker_by_id(worker_id: str, include_password: bool = False) -> Optional[Dict[str, Any]]:
+    projection = {"_id": 0}
+    if not include_password:
+        projection["password_hash"] = 0
     if _use_mongodb:
-        return _mongo_db.workers.find_one({"id": worker_id}, {"_id": 0})
+        return _mongo_db.workers.find_one({"id": worker_id}, projection)
     import sqlite3
     conn = sqlite3.connect(SQLITE_PATH)
     conn.row_factory = sqlite3.Row
@@ -204,6 +248,8 @@ def get_worker_by_id(worker_id: str) -> Optional[Dict[str, Any]]:
         return None
     d = dict(row)
     d["permissions"] = json.loads(d["permissions"])
+    if not include_password:
+        d.pop("password_hash", None)
     return d
 
 def create_worker(data: Dict[str, Any]) -> Dict[str, Any]:
@@ -218,6 +264,9 @@ def create_worker(data: Dict[str, Any]) -> Dict[str, Any]:
         "allowed_locations": [data.get("clinic", "")]
     })
 
+    password = data.get("password") or DEFAULT_WORKER_PASSWORD
+    password_hash = hash_password(password)
+
     record = {
         "id": data["id"],
         "name": data["name"],
@@ -227,6 +276,7 @@ def create_worker(data: Dict[str, Any]) -> Dict[str, Any]:
         "clinic": data["clinic"],
         "status": data.get("status", "active"),
         "permissions": permissions,
+        "password_hash": password_hash,
         "created_at": created_at
     }
 
@@ -237,17 +287,17 @@ def create_worker(data: Dict[str, Any]) -> Dict[str, Any]:
     import sqlite3
     conn = sqlite3.connect(SQLITE_PATH)
     conn.execute(
-        """INSERT INTO workers (id, name, email, phone, role_title, clinic, status, permissions, created_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        """INSERT INTO workers (id, name, email, phone, role_title, clinic, status, permissions, created_at, password_hash)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (record["id"], record["name"], record["email"], record["phone"], record["role_title"],
-         record["clinic"], record["status"], json.dumps(record["permissions"]), record["created_at"])
+         record["clinic"], record["status"], json.dumps(record["permissions"]), record["created_at"], record["password_hash"])
     )
     conn.commit()
     conn.close()
     return get_worker_by_id(data["id"])
 
 def update_worker(worker_id: str, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-    current = get_worker_by_id(worker_id)
+    current = get_worker_by_id(worker_id, include_password=True)
     if not current:
         return None
 
@@ -259,27 +309,77 @@ def update_worker(worker_id: str, data: Dict[str, Any]) -> Optional[Dict[str, An
     status = data.get("status", current["status"])
     permissions = data.get("permissions", current["permissions"])
 
+    new_password = data.get("password")
+    new_password_hash = hash_password(new_password) if new_password and new_password.strip() else current.get("password_hash")
+
     if _use_mongodb:
-        _mongo_db.workers.update_one(
-            {"id": worker_id},
-            {"$set": {
-                "name": name, "email": email, "phone": phone,
-                "role_title": role_title, "clinic": clinic, "status": status,
-                "permissions": permissions
-            }}
-        )
+        update_doc = {
+            "name": name, "email": email, "phone": phone,
+            "role_title": role_title, "clinic": clinic, "status": status,
+            "permissions": permissions
+        }
+        if new_password and new_password.strip():
+            update_doc["password_hash"] = new_password_hash
+        _mongo_db.workers.update_one({"id": worker_id}, {"$set": update_doc})
         return get_worker_by_id(worker_id)
 
     import sqlite3
     conn = sqlite3.connect(SQLITE_PATH)
     conn.execute(
-        """UPDATE workers SET name = ?, email = ?, phone = ?, role_title = ?, clinic = ?, status = ?, permissions = ?
+        """UPDATE workers SET name = ?, email = ?, phone = ?, role_title = ?, clinic = ?, status = ?, permissions = ?, password_hash = ?
            WHERE id = ?""",
-        (name, email, phone, role_title, clinic, status, json.dumps(permissions), worker_id)
+        (name, email, phone, role_title, clinic, status, json.dumps(permissions), new_password_hash, worker_id)
     )
     conn.commit()
     conn.close()
     return get_worker_by_id(worker_id)
+
+def authenticate_worker(login: str, password: str) -> Optional[Dict[str, Any]]:
+    login = (login or "").strip()
+    password = (password or "").strip()
+    if not login or not password:
+        return None
+
+    worker = None
+    if _use_mongodb:
+        # Search by id (case-insensitive), email (case-insensitive), or exact phone
+        worker = _mongo_db.workers.find_one({
+            "$or": [
+                {"id": {"$regex": f"^{login}$", "$options": "i"}},
+                {"email": {"$regex": f"^{login}$", "$options": "i"}},
+                {"phone": login}
+            ]
+        }, {"_id": 0})
+    else:
+        import sqlite3
+        conn = sqlite3.connect(SQLITE_PATH)
+        conn.row_factory = sqlite3.Row
+        row = conn.execute(
+            "SELECT * FROM workers WHERE LOWER(id) = LOWER(?) OR LOWER(email) = LOWER(?) OR phone = ?",
+            (login, login, login)
+        ).fetchone()
+        conn.close()
+        if row:
+            worker = dict(row)
+            worker["permissions"] = json.loads(worker["permissions"])
+
+    if not worker:
+        return None
+
+    stored_hash = worker.get("password_hash")
+    if not verify_password(password, stored_hash):
+        return None
+
+    if worker.get("status") == "suspended":
+        return {
+            "suspended": True,
+            "id": worker["id"],
+            "name": worker["name"],
+            "message": "Healthcare worker account is suspended. Contact the supervising ophthalmologist."
+        }
+
+    worker.pop("password_hash", None)
+    return worker
 
 def delete_worker(worker_id: str) -> bool:
     if _use_mongodb:

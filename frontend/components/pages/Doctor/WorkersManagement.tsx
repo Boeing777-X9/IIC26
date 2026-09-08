@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import {
   Users, UserPlus, Shield, CheckCircle2, XCircle, Edit3, Trash2,
-  Database, MapPin, Phone, Mail, Stethoscope, Search, AlertCircle, Eye, Send, FileText, Check
+  Database, MapPin, Phone, Mail, Stethoscope, Search, AlertCircle, Eye, EyeOff, Send, FileText, Check, Lock, Copy
 } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import Topbar from "@/components/Topbar";
@@ -52,6 +52,8 @@ export default function WorkersManagement() {
   const [formLocations, setFormLocations] = useState("Tirunelveli, Madurai");
   const [formPermissions, setFormPermissions] = useState<WorkerPermissions>(DEFAULT_PERMISSIONS);
   const [formStatus, setFormStatus] = useState<"active" | "suspended">("active");
+  const [formPassword, setFormPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null);
 
@@ -73,6 +75,8 @@ export default function WorkersManagement() {
     setFormLocations("Tirunelveli");
     setFormPermissions(DEFAULT_PERMISSIONS);
     setFormStatus("active");
+    setFormPassword("retinix2026");
+    setShowPassword(false);
     setShowModal(true);
   };
 
@@ -87,7 +91,18 @@ export default function WorkersManagement() {
     setFormLocations((worker.permissions.allowed_locations || []).join(", "));
     setFormPermissions(worker.permissions);
     setFormStatus(worker.status);
+    setFormPassword("");
+    setShowPassword(false);
     setShowModal(true);
+  };
+
+  const handleCopyCredentials = (w: Worker) => {
+    const text = `Retinix Healthcare Worker Credentials\nWorker ID: ${w.id}\nName: ${w.name}\nEmail: ${w.email}\nClinic: ${w.clinic}\nPortal Login: /health-worker/login`;
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+      setFeedbackMsg(`Copied credentials for ${w.name} to clipboard.`);
+      setTimeout(() => setFeedbackMsg(null), 3500);
+    }
   };
 
   const handleTogglePermission = (key: keyof Omit<WorkerPermissions, "allowed_locations">) => {
@@ -118,7 +133,8 @@ export default function WorkersManagement() {
       permissions: {
         ...formPermissions,
         allowed_locations: locations.length > 0 ? locations : [formClinic]
-      }
+      },
+      ...(formPassword.trim() ? { password: formPassword.trim() } : {})
     };
 
     if (editingWorker) {
@@ -359,17 +375,24 @@ export default function WorkersManagement() {
                         </td>
 
                         <td className="px-4 py-4 text-right">
-                          <div className="flex items-center justify-end gap-2">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              onClick={() => handleCopyCredentials(w)}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors cursor-pointer"
+                              title="Copy worker login credentials"
+                            >
+                              <Copy size={15} />
+                            </button>
                             <button
                               onClick={() => openEditModal(w)}
-                              className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors cursor-pointer"
                               title="Edit worker & permissions"
                             >
                               <Edit3 size={15} />
                             </button>
                             <button
                               onClick={() => handleDelete(w.id)}
-                              className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
                               title="Delete worker"
                             >
                               <Trash2 size={15} />
@@ -475,22 +498,56 @@ export default function WorkersManagement() {
                     />
                   </div>
 
-                  <div>
-                    <label className="text-xs font-medium text-slate-600 block mb-1">Designation / Role Title</label>
-                    <select
-                      value={formRole}
-                      onChange={e => setFormRole(e.target.value)}
-                      className="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white"
-                    >
-                      <option value="Primary Health Screener">Primary Health Screener</option>
-                      <option value="Field Ophthalmic Assistant">Field Ophthalmic Assistant</option>
-                      <option value="Community Health Officer (CHO)">Community Health Officer (CHO)</option>
-                      <option value="Vision Center Technician">Vision Center Technician</option>
-                      <option value="Senior Nurse Screener">Senior Nurse Screener</option>
-                    </select>
+                    <div>
+                      <label className="text-xs font-medium text-slate-600 block mb-1">Designation / Role Title</label>
+                      <select
+                        value={formRole}
+                        onChange={e => setFormRole(e.target.value)}
+                        className="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white"
+                      >
+                        <option value="Primary Health Screener">Primary Health Screener</option>
+                        <option value="Field Ophthalmic Assistant">Field Ophthalmic Assistant</option>
+                        <option value="Community Health Officer (CHO)">Community Health Officer (CHO)</option>
+                        <option value="Vision Center Technician">Vision Center Technician</option>
+                        <option value="Senior Nurse Screener">Senior Nurse Screener</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-xs font-medium text-slate-600 block">
+                          {editingWorker ? "Reset Access Password / PIN (optional)" : "Access Password / PIN"}
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => setFormPassword("retinix" + Math.floor(1000 + Math.random() * 9000))}
+                          className="text-[11px] text-emerald-600 hover:text-emerald-700 font-medium cursor-pointer"
+                        >
+                          Generate Random PIN
+                        </button>
+                      </div>
+                      <div className="relative">
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          value={formPassword}
+                          onChange={e => setFormPassword(e.target.value)}
+                          placeholder={editingWorker ? "Leave blank to keep existing password" : "e.g. retinix2026"}
+                          className="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none pr-10 font-mono"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                        >
+                          {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                        </button>
+                      </div>
+                      <p className="text-[10px] text-slate-400 mt-1">
+                        Worker will use this PIN / password to sign in at <span className="font-mono text-emerald-700 font-medium">/health-worker/login</span>.
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
 
               {/* Permissions Manager */}
               <div className="space-y-3 pt-2 border-t border-slate-100">

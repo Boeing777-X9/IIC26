@@ -5,6 +5,9 @@ from typing import Optional, Dict, Any, List
 from contextlib import asynccontextmanager
 import logging
 
+import secrets
+from pydantic import BaseModel
+
 from app.model_service import get_model_service
 from app.db import (
     init_db,
@@ -14,6 +17,7 @@ from app.db import (
     create_worker,
     update_worker,
     delete_worker,
+    authenticate_worker,
     get_all_patients,
     get_patient_by_id,
     create_patient,
@@ -84,6 +88,61 @@ def check_db_status():
 def get_model_info():
     service = get_model_service()
     return service.get_info()
+
+
+# ===================== WORKER AUTHENTICATION =====================
+
+class WorkerLoginRequest(BaseModel):
+    login: str
+    password: str
+
+@app.post("/api/auth/worker/login")
+@app.post("/api/workers/login")
+def worker_login(req: WorkerLoginRequest):
+    """Authenticate a frontline healthcare worker via ID, Email, or Phone + Password."""
+    worker = authenticate_worker(req.login, req.password)
+    if not worker:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid credentials. Please verify your Worker ID or Email and Password."
+        )
+    if worker.get("suspended"):
+        raise HTTPException(
+            status_code=403,
+            detail="Healthcare worker account is suspended. Please contact the clinic supervising ophthalmologist."
+        )
+
+    # Issue deterministic session token
+    token = f"worker_{worker['id']}_{secrets.token_hex(20)}"
+    logger.info(f"Worker {worker['id']} ({worker['name']}) logged in successfully.")
+    return {
+        "success": True,
+        "token": token,
+        "worker": worker,
+        "message": f"Welcome back, {worker['name']}."
+    }
+
+@app.get("/api/auth/worker/me")
+def get_current_worker(token: Optional[str] = None, worker_id: Optional[str] = None):
+    """Verify and retrieve current authenticated worker session."""
+    w_id = worker_id
+    if token and token.startswith("worker_"):
+        parts = token.split("_")
+        if len(parts) >= 2:
+            w_id = parts[1]
+    if not w_id:
+        raise HTTPException(status_code=401, detail="Authentication token or worker ID is required.")
+
+    worker = get_worker_by_id(w_id)
+    if not worker:
+        raise HTTPException(status_code=404, detail="Worker session not found.")
+    if worker.get("status") == "suspended":
+        raise HTTPException(status_code=403, detail="Worker account is suspended.")
+
+    return {
+        "authenticated": True,
+        "worker": worker
+    }
 
 
 # ===================== WORKERS (DOCTOR PORTAL) =====================

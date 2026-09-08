@@ -24,6 +24,7 @@ export interface Worker {
   clinic: string;
   status: "active" | "suspended";
   permissions: WorkerPermissions;
+  password?: string;
   created_at?: string;
 }
 
@@ -132,6 +133,94 @@ export function getActiveWorker(): Worker {
 
 export function setActiveWorker(worker: Worker): void {
   saveLocal("retina_active_worker", worker);
+}
+
+// ================= Worker Authentication & Session =================
+
+export interface AuthResult {
+  success: boolean;
+  token?: string;
+  worker?: Worker;
+  error?: string;
+}
+
+export function getAuthToken(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return localStorage.getItem("retinix_auth_token");
+  } catch {
+    return null;
+  }
+}
+
+export function setAuthToken(token: string | null): void {
+  if (typeof window === "undefined") return;
+  try {
+    if (token) {
+      localStorage.setItem("retinix_auth_token", token);
+    } else {
+      localStorage.removeItem("retinix_auth_token");
+    }
+  } catch {}
+}
+
+export async function loginWorkerApi(login: string, password: string): Promise<AuthResult> {
+  try {
+    const res = await fetch(`${API_BASE}/auth/worker/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ login: login.trim(), password: password.trim() })
+    });
+    const data = await res.json();
+    if (res.ok && data.success && data.worker) {
+      setActiveWorker(data.worker);
+      setAuthToken(data.token);
+      return { success: true, token: data.token, worker: data.worker };
+    }
+    return { success: false, error: data.detail || "Authentication failed." };
+  } catch (err) {
+    // Offline local authentication fallback
+    const workers = getWorkers();
+    const found = workers.find(w => 
+      w.id.toLowerCase() === login.trim().toLowerCase() ||
+      w.email.toLowerCase() === login.trim().toLowerCase()
+    );
+    if (found) {
+      if (found.status === "suspended") {
+        return { success: false, error: "Healthcare worker account is suspended." };
+      }
+      setActiveWorker(found);
+      const fallbackToken = `worker_${found.id}_local`;
+      setAuthToken(fallbackToken);
+      return { success: true, token: fallbackToken, worker: found };
+    }
+    return { success: false, error: "Unable to reach server. Please check backend connection." };
+  }
+}
+
+export function logoutWorker(): void {
+  setAuthToken(null);
+  saveLocal("retina_active_worker", DEFAULT_WORKER);
+}
+
+export async function fetchCurrentWorkerApi(): Promise<Worker | null> {
+  const token = getAuthToken();
+  const current = getActiveWorker();
+  if (!token) return current;
+
+  try {
+    const res = await fetch(`${API_BASE}/auth/worker/me?token=${encodeURIComponent(token)}&worker_id=${encodeURIComponent(current.id)}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.authenticated && data.worker) {
+        setActiveWorker(data.worker);
+        return data.worker;
+      }
+    }
+  } catch (err) {
+    console.warn("Could not re-verify worker session with server", err);
+  }
+  return current;
 }
 
 // ================= Synchronized Data Access =================

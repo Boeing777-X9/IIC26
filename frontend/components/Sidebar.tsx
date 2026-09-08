@@ -7,7 +7,7 @@ import {
   Eye, LayoutDashboard, UserPlus, Users, History, Send, BarChart2,
   Settings, LogOut, Stethoscope, ClipboardList, Shield, SwitchCamera
 } from "lucide-react";
-import { getActiveWorker, getWorkers, setActiveWorker, Worker, DEFAULT_WORKER } from "@/lib/store";
+import { getActiveWorker, getWorkers, setActiveWorker, logoutWorker, Worker, DEFAULT_WORKER } from "@/lib/store";
 
 type Role = "worker" | "doctor";
 
@@ -132,9 +132,16 @@ export default function Sidebar({ role }: { role: Role }) {
           )}
 
           <button
-            onClick={() => router.push("/")}
+            onClick={() => {
+              if (role === "worker") {
+                logoutWorker();
+                router.push("/health-worker/login");
+              } else {
+                router.push("/");
+              }
+            }}
             title="Sign out"
-            className="p-1.5 text-slate-400 hover:text-slate-600 transition-colors"
+            className="p-1.5 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
           >
             <LogOut size={14} />
           </button>
@@ -161,6 +168,14 @@ export default function Sidebar({ role }: { role: Role }) {
                 {w.id === activeWorker.id && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />}
               </button>
             ))}
+            <div className="pt-1 border-t border-slate-100">
+              <Link
+                href="/health-worker/login"
+                className="block text-center py-1.5 px-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-[11px] font-semibold rounded-lg border border-emerald-200 transition-colors"
+              >
+                Sign In with Credentials →
+              </Link>
+            </div>
           </div>
         )}
       </div>

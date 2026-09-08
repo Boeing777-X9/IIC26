@@ -62,10 +62,10 @@ export default function Landing() {
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => navigate("/health-worker")}
+              onClick={() => navigate("/health-worker/login")}
               className="text-sm text-slate-600 hover:text-slate-900 px-3 py-1.5 transition-colors"
             >
-              Healthcare Worker
+              Healthcare Worker Login
             </button>
             <button
               onClick={() => navigate("/doctor")}

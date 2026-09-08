@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   getScreenings, getPatient, getReferrals, getActiveWorker, DEFAULT_WORKER,
-  fetchScreeningsApi, fetchReferralsApi, fetchPatientsApi,
+  fetchScreeningsApi, fetchReferralsApi, fetchPatientsApi, fetchWorkersApi,
   Screening, Referral, Worker
 } from "@/lib/store";
 
@@ -44,6 +44,11 @@ export default function WorkerDashboard() {
   useEffect(() => {
     setMounted(true);
     setActiveWorkerState(getActiveWorker());
+    fetchWorkersApi().then(workers => {
+      if (workers.length > 0) {
+        setActiveWorkerState(getActiveWorker());
+      }
+    });
     setScreenings(getScreenings());
     setReferrals(getReferrals());
     fetchScreeningsApi().then(setScreenings);

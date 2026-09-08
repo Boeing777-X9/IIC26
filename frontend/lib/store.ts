@@ -109,26 +109,40 @@ function saveLocal<T>(key: string, data: T): void {
 
 // ================= Active Worker State =================
 export const DEFAULT_WORKER: Worker = {
-  id: "HW-101",
-  name: "Priya Venkat",
-  email: "priya.venkat@health.gov.in",
-  phone: "+91 94451 23098",
+  id: "HW-MTT2AHE4",
+  name: "Param",
+  email: "parammehta06@gmail.com",
+  phone: "6291776113",
   role_title: "Primary Health Screener",
-  clinic: "CHC Tirunelveli",
+  clinic: "MUJ",
   status: "active",
   permissions: {
     can_screen: true,
     can_refer: true,
     can_register_patients: true,
-    can_view_all_patients: true,
-    can_override_priority: true,
+    can_view_all_patients: false,
+    can_override_priority: false,
     can_export_data: true,
-    allowed_locations: ["Tirunelveli", "Alangulam", "Tenkasi"]
+    allowed_locations: ["MUJ"]
   }
 };
 
 export function getActiveWorker(): Worker {
-  return loadLocal("retina_active_worker", DEFAULT_WORKER);
+  const cached = loadLocal<Worker | null>("retina_active_worker", null);
+  const workers = getWorkers();
+
+  if (cached) {
+    // If cached worker exists in the current workers list, return the up-to-date record
+    const found = workers.find(w => w.id === cached.id);
+    if (found) return found;
+  }
+
+  // If no cached worker or cached worker was deleted/stale, use the first valid worker
+  if (workers.length > 0) {
+    return workers[0];
+  }
+
+  return DEFAULT_WORKER;
 }
 
 export function setActiveWorker(worker: Worker): void {
@@ -260,8 +274,17 @@ export async function fetchWorkersApi(): Promise<Worker[]> {
     const res = await fetch(`${API_BASE}/workers`);
     if (res.ok) {
       const workers: Worker[] = await res.json();
-      saveLocal("retina_workers", workers);
-      return workers;
+      if (Array.isArray(workers) && workers.length > 0) {
+        saveLocal("retina_workers", workers);
+
+        // Keep active worker in sync with the real database records
+        const currentActive = loadLocal<Worker | null>("retina_active_worker", null);
+        const matchingWorker = currentActive ? workers.find(w => w.id === currentActive.id) : null;
+        const validActive = matchingWorker || workers[0];
+
+        setActiveWorker(validActive);
+        return workers;
+      }
     }
   } catch (err) {
     console.warn("Using local workers cache (backend offline)", err);
@@ -322,6 +345,16 @@ export async function deleteWorkerApi(workerId: string): Promise<boolean> {
   const current = getWorkers().filter(w => w.id !== workerId);
   saveLocal("retina_workers", current);
 
+  // If deleted worker was active, switch active worker to the first available worker
+  const active = getActiveWorker();
+  if (active.id === workerId) {
+    if (current.length > 0) {
+      setActiveWorker(current[0]);
+    } else {
+      setActiveWorker(DEFAULT_WORKER);
+    }
+  }
+
   try {
     const res = await fetch(`${API_BASE}/workers/${workerId}`, { method: "DELETE" });
     return res.ok;
@@ -329,6 +362,7 @@ export async function deleteWorkerApi(workerId: string): Promise<boolean> {
     return true;
   }
 }
+
 
 export async function fetchPatientsApi(): Promise<Patient[]> {
   try {
@@ -511,5 +545,29 @@ export function resetStore(): void {
     localStorage.removeItem("retina_referrals");
     localStorage.removeItem("retina_active_worker");
   } catch {}
+}
+
+export async function syncAllFromDb(): Promise<{ success: boolean; message: string; worker?: Worker }> {
+  try {
+    const [workers, patients, screenings, referrals, dbStatus] = await Promise.all([
+      fetchWorkersApi(),
+      fetchPatientsApi(),
+      fetchScreeningsApi(),
+      fetchReferralsApi(),
+      fetchDbStatusApi()
+    ]);
+
+    const active = getActiveWorker();
+    return {
+      success: true,
+      message: `Synchronized ${workers.length} worker(s), ${patients.length} patient(s), ${screenings.length} screening(s), and ${referrals.length} referral(s) from ${dbStatus.engine}.`,
+      worker: active
+    };
+  } catch (err) {
+    return {
+      success: false,
+      message: `Failed to sync from database: ${err}`
+    };
+  }
 }
 

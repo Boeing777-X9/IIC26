@@ -1,9 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Eye, Info, Database, Shield, RotateCcw, UserCheck, Stethoscope } from "lucide-react";
+import { Eye, Info, Database, Shield, RotateCcw, UserCheck, Stethoscope, CheckCircle2 } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import Topbar from "@/components/Topbar";
-import { resetStore, fetchDbStatusApi, getActiveWorker } from "@/lib/store";
+import { fetchDbStatusApi, getActiveWorker, syncAllFromDb, fetchWorkersApi } from "@/lib/store";
 
 export default function Settings({ role }: { role: "worker" | "doctor" }) {
   const [dbStatus, setDbStatus] = useState<{ engine: string; connected: boolean; database: string; message: string }>({
@@ -13,19 +13,28 @@ export default function Settings({ role }: { role: "worker" | "doctor" }) {
     message: "Connecting..."
   });
   const [activeWorker, setActiveWorker] = useState<any>(null);
+  const [syncing, setSyncing] = useState(false);
+  const [syncFeedback, setSyncFeedback] = useState<string | null>(null);
 
   useEffect(() => {
     fetchDbStatusApi().then(setDbStatus);
-    if (role === "worker") {
-      setActiveWorker(getActiveWorker());
-    }
+    fetchWorkersApi().then(() => {
+      if (role === "worker") {
+        setActiveWorker(getActiveWorker());
+      }
+    });
   }, [role]);
 
-  const handleReset = () => {
-    if (confirm("Reset local cache? This will re-synchronize clean data from the database server.")) {
-      resetStore();
-      window.location.reload();
+  const handleSyncFromDb = async () => {
+    setSyncing(true);
+    setSyncFeedback(null);
+    const res = await syncAllFromDb();
+    setSyncing(false);
+    if (res.worker && role === "worker") {
+      setActiveWorker(res.worker);
     }
+    setSyncFeedback(res.message);
+    setTimeout(() => setSyncFeedback(null), 5000);
   };
 
   return (
@@ -35,6 +44,13 @@ export default function Settings({ role }: { role: "worker" | "doctor" }) {
         <Topbar title="System & Profile Settings" role={role} />
         <main className="flex-1 overflow-y-auto p-6">
           <div className="max-w-2xl space-y-5">
+            {syncFeedback && (
+              <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-2.5 text-xs text-emerald-800">
+                <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+                <span>{syncFeedback}</span>
+              </div>
+            )}
+
             {/* Identity Profile */}
             <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm">
               <div className="flex items-center gap-3 mb-4">
@@ -54,7 +70,7 @@ export default function Settings({ role }: { role: "worker" | "doctor" }) {
               <div className="space-y-3 pt-2 border-t border-slate-100">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-slate-400 font-medium">Full Name</span>
-                  <span className="text-slate-800 font-semibold">{role === "doctor" ? "Dr. Arjun Rao, MD (AIIMS)" : (activeWorker?.name || "Priya Venkat")}</span>
+                  <span className="text-slate-800 font-semibold">{role === "doctor" ? "Dr. Arjun Rao, MD (AIIMS)" : (activeWorker?.name || "Healthcare Screener")}</span>
                 </div>
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-slate-400 font-medium">Designation</span>
@@ -62,7 +78,7 @@ export default function Settings({ role }: { role: "worker" | "doctor" }) {
                 </div>
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-slate-400 font-medium">Healthcare Base</span>
-                  <span className="text-slate-800 font-medium">{role === "doctor" ? "Aravind Eye Hospital / CHC Tirunelveli Cluster" : (activeWorker?.clinic || "CHC Tirunelveli")}</span>
+                  <span className="text-slate-800 font-medium">{role === "doctor" ? "Aravind Eye Hospital / CHC Tirunelveli Cluster" : (activeWorker?.clinic || "Designated Primary Clinic")}</span>
                 </div>
                 {role === "worker" && activeWorker?.permissions && (
                   <div className="flex items-center justify-between text-xs">
@@ -115,11 +131,12 @@ export default function Settings({ role }: { role: "worker" | "doctor" }) {
                   </p>
                 </div>
                 <button
-                  onClick={handleReset}
-                  className="flex items-center gap-1.5 text-xs border border-slate-200 text-slate-600 px-3 py-2 rounded-xl hover:bg-slate-50 transition-colors font-medium shrink-0"
+                  onClick={handleSyncFromDb}
+                  disabled={syncing}
+                  className="flex items-center gap-1.5 text-xs border border-emerald-200 text-emerald-700 bg-emerald-50/50 hover:bg-emerald-50 px-3.5 py-2 rounded-xl transition-colors font-medium shrink-0 cursor-pointer disabled:opacity-50"
                 >
-                  <RotateCcw size={13} />
-                  <span>Sync from DB</span>
+                  <RotateCcw size={13} className={syncing ? "animate-spin" : ""} />
+                  <span>{syncing ? "Synchronizing..." : "Sync from DB"}</span>
                 </button>
               </div>
             </div>

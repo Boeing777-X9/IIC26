@@ -75,6 +75,7 @@ def get_db_status() -> Dict[str, Any]:
 def init_db():
     global _mongo_client, _mongo_db, _use_mongodb, MONGODB_URI
     MONGODB_URI = os.environ.get("MONGODB_URI", "mongodb://localhost:27017")
+    _ensure_sqlite_schema()
     try:
         from pymongo import MongoClient
         logger.info(f"Connecting to MongoDB at {sanitize_uri(MONGODB_URI)} (timeout 5s)...")
@@ -92,9 +93,9 @@ def init_db():
         _mongo_db.screenings.create_index("id", unique=True)
         _mongo_db.referrals.create_index("id", unique=True)
 
-        # Seed default worker if missing
+        # Seed default worker only if no workers exist in the database
         default_pwd_hash = hash_password(DEFAULT_WORKER_PASSWORD)
-        if _mongo_db.workers.find_one({"id": "HW-101"}) is None:
+        if _mongo_db.workers.count_documents({}) == 0:
             _mongo_db.workers.insert_one({
                 "id": "HW-101",
                 "name": "Priya Venkat",

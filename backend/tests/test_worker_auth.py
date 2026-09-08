@@ -6,37 +6,48 @@ from app.db import DEFAULT_WORKER_PASSWORD, create_worker, delete_worker
 class TestWorkerAuthentication(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        from app.db import init_db
+        from app.db import init_db, get_worker_by_id, create_worker
         init_db()
+        if not get_worker_by_id("HW-AUTH-TEST"):
+            create_worker({
+                "id": "HW-AUTH-TEST",
+                "name": "Auth Tester",
+                "email": "authtester@health.gov.in",
+                "phone": "+91 91111 22222",
+                "role_title": "Tester",
+                "clinic": "Test Clinic",
+                "password": DEFAULT_WORKER_PASSWORD,
+                "permissions": {"can_screen": True}
+            })
 
     def setUp(self):
         self.client = TestClient(app)
 
     def test_login_success_with_id(self):
         response = self.client.post("/api/auth/worker/login", json={
-            "login": "HW-101",
+            "login": "HW-AUTH-TEST",
             "password": DEFAULT_WORKER_PASSWORD
         })
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertTrue(data["success"])
         self.assertIn("token", data)
-        self.assertEqual(data["worker"]["id"], "HW-101")
+        self.assertEqual(data["worker"]["id"], "HW-AUTH-TEST")
         self.assertNotIn("password_hash", data["worker"])
 
     def test_login_success_with_email(self):
         response = self.client.post("/api/auth/worker/login", json={
-            "login": "priya.venkat@health.gov.in",
+            "login": "authtester@health.gov.in",
             "password": DEFAULT_WORKER_PASSWORD
         })
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertTrue(data["success"])
-        self.assertEqual(data["worker"]["id"], "HW-101")
+        self.assertEqual(data["worker"]["id"], "HW-AUTH-TEST")
 
     def test_login_invalid_password(self):
         response = self.client.post("/api/auth/worker/login", json={
-            "login": "HW-101",
+            "login": "HW-AUTH-TEST",
             "password": "incorrect_password_123"
         })
         self.assertEqual(response.status_code, 401)

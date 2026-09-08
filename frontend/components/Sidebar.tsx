@@ -7,7 +7,7 @@ import {
   Eye, LayoutDashboard, UserPlus, Users, History, Send, BarChart2,
   Settings, LogOut, Stethoscope, ClipboardList, Shield, SwitchCamera
 } from "lucide-react";
-import { getActiveWorker, getWorkers, setActiveWorker, logoutWorker, Worker, DEFAULT_WORKER } from "@/lib/store";
+import { getActiveWorker, getWorkers, setActiveWorker, logoutWorker, Worker, DEFAULT_WORKER, fetchWorkersApi } from "@/lib/store";
 
 type Role = "worker" | "doctor";
 
@@ -43,6 +43,12 @@ export default function Sidebar({ role }: { role: Role }) {
   useEffect(() => {
     setActiveWorkerState(getActiveWorker());
     setAllWorkers(getWorkers());
+    fetchWorkersApi().then(workers => {
+      if (workers.length > 0) {
+        setAllWorkers(workers);
+        setActiveWorkerState(getActiveWorker());
+      }
+    });
   }, []);
 
   const nav = role === "worker" ? workerNav : doctorNav;

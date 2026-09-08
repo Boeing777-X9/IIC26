@@ -16,6 +16,12 @@ app.add_middleware(
 def health_check():
     return {"status": "healthy", "service": "Retinal Screening XAI"}
 
+
+@app.get("/up")
+def up_check():
+    return {"status": "up"}
+
+
 @app.post("/api/predict")
 async def predict_dr(file: UploadFile = File(...)):
     # Mock response to test end-to-end frontend integration

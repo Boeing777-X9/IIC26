@@ -47,12 +47,6 @@ export interface PredictResult {
   };
 }
 
-const SAMPLE_OPTIONS = [
-  { label: "Normal (Grade 0)", path: "/samples/normal_fundus.jpg" },
-  { label: "Mild (Grade 1)", path: "/samples/mild_fundus.jpg" },
-  { label: "Moderate (Grade 2)", path: "/samples/mod_fundus.jpg" },
-  { label: "Severe (Grade 3)", path: "/samples/severe_fundus.jpg" },
-];
 
 function AnalysisLoader({ progress, currentStep }: { progress: number; currentStep: string }) {
   const steps = [
@@ -492,9 +486,9 @@ export default function NewScreening() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [dragging, setDragging] = useState(false);
-  const [patientId, setPatientId] = useState("PT-1001");
-  const [age, setAge] = useState("58");
-  const [duration, setDuration] = useState("12");
+  const [patientId, setPatientId] = useState("");
+  const [age, setAge] = useState("");
+  const [duration, setDuration] = useState("");
   const [eye, setEye] = useState<"right" | "left">("right");
   const [analysisResult, setAnalysisResult] = useState<PredictResult | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -505,11 +499,6 @@ export default function NewScreening() {
     setActiveWorkerState(w);
     fetchPatientsApi().then(list => {
       setPatients(list);
-      if (list.length > 0) {
-        setPatientId(list[0].id);
-        setAge(String(list[0].age));
-        setDuration(String(list[0].diabetes_duration));
-      }
     });
   }, []);
 
@@ -519,6 +508,9 @@ export default function NewScreening() {
     if (p) {
       setAge(String(p.age));
       setDuration(String(p.diabetes_duration));
+    } else {
+      setAge("");
+      setDuration("");
     }
   };
 
@@ -542,25 +534,22 @@ export default function NewScreening() {
     }
   };
 
-  const handleSelectSample = async (path: string) => {
-    try {
-      setImagePreview(path);
-      const res = await fetch(path);
-      const blob = await res.blob();
-      const file = new File([blob], path.split("/").pop() || "sample.jpg", { type: blob.type || "image/jpeg" });
-      setSelectedFile(file);
-      setErrorMessage(null);
-    } catch {
-      setImagePreview(path);
-    }
-  };
-
   const canScreen = activeWorker.permissions?.can_screen ?? true;
   const canRefer = activeWorker.permissions?.can_refer ?? true;
 
   const handleAnalyze = async () => {
     if (!canScreen) {
       setErrorMessage("Access Denied: You do not possess permission to execute AI screenings. Contact clinic administrator.");
+      return;
+    }
+
+    if (!patientId) {
+      setErrorMessage("Please select a registered patient before initiating AI screening.");
+      return;
+    }
+
+    if (!selectedFile && !imagePreview) {
+      setErrorMessage("Please upload or capture a fundus photograph to analyze.");
       return;
     }
 
@@ -578,10 +567,6 @@ export default function NewScreening() {
         const res = await fetch(imagePreview);
         const blob = await res.blob();
         formData.append("file", blob, "fundus_scan.jpg");
-      } else {
-        const res = await fetch("/samples/mod_fundus.jpg");
-        const blob = await res.blob();
-        formData.append("file", blob, "mod_fundus.jpg");
       }
 
       formData.append("patient_id", patientId);
@@ -678,6 +663,34 @@ export default function NewScreening() {
 
             {phase === "form" && (
               <div className="max-w-2xl mx-auto space-y-5">
+                {/* Patient Selection Card */}
+                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs">
+                  <h2 className="font-semibold text-slate-800 text-base mb-1">Patient Record</h2>
+                  <p className="text-xs text-slate-400 mb-4">Select the patient registered for this retinal examination</p>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-700 block mb-1.5">Patient</label>
+                    <select
+                      value={patientId}
+                      onChange={e => handleSelectPatient(e.target.value)}
+                      className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white text-slate-800"
+                    >
+                      <option value="">-- Select Patient --</option>
+                      {patients.map(p => (
+                        <option key={p.id} value={p.id}>
+                          {p.name} ({p.id}) · Age: {p.age} · Village: {p.village}
+                        </option>
+                      ))}
+                    </select>
+                    {patientId && (
+                      <div className="mt-3 p-3 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-between text-xs text-slate-600">
+                        <span>Age: <strong className="text-slate-800">{age} yrs</strong></span>
+                        <span>Diabetes Duration: <strong className="text-slate-800">{duration} yrs</strong></span>
+                        <span className="text-emerald-700 font-semibold font-mono">{patientId}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 {/* Fundus Image Upload */}
                 <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
                   <div className="flex items-center justify-between mb-4">
@@ -739,27 +752,10 @@ export default function NewScreening() {
                           <X size={14} />
                         </button>
                         <p className="text-xs text-slate-500 mt-2 text-center font-medium">
-                          {selectedFile ? `File: ${selectedFile.name}` : "Sample image selected"}
+                          {selectedFile ? `File: ${selectedFile.name}` : "Image ready for analysis"}
                         </p>
                       </div>
                     )}
-
-                    {/* Quick Preset Samples */}
-                    <div className="mt-4 pt-3 border-t border-slate-100">
-                      <p className="text-[11px] font-semibold tracking-wider text-slate-400 uppercase mb-2">Or test with clinical samples:</p>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                        {SAMPLE_OPTIONS.map(opt => (
-                          <button
-                            key={opt.path}
-                            type="button"
-                            onClick={() => handleSelectSample(opt.path)}
-                            className="text-xs py-1.5 px-2.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-emerald-50 hover:border-emerald-300 text-slate-700 hover:text-emerald-800 font-medium transition-colors text-center truncate"
-                          >
-                            {opt.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
                   </div>
 
                   {/* Submit Button */}

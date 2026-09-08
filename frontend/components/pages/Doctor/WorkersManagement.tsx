@@ -51,8 +51,8 @@ export default function WorkersManagement() {
   const [formEmail, setFormEmail] = useState("");
   const [formPhone, setFormPhone] = useState("");
   const [formRole, setFormRole] = useState("Primary Health Screener");
-  const [formClinic, setFormClinic] = useState("CHC Tirunelveli");
-  const [formLocations, setFormLocations] = useState("Tirunelveli, Madurai");
+  const [formClinic, setFormClinic] = useState("");
+  const [formLocations, setFormLocations] = useState("");
   const [formPermissions, setFormPermissions] = useState<WorkerPermissions>(DEFAULT_PERMISSIONS);
   const [formStatus, setFormStatus] = useState<"active" | "suspended">("active");
   const [formPassword, setFormPassword] = useState("");
@@ -74,11 +74,11 @@ export default function WorkersManagement() {
     setFormEmail("");
     setFormPhone("");
     setFormRole("Primary Health Screener");
-    setFormClinic("CHC Tirunelveli");
-    setFormLocations("Tirunelveli");
+    setFormClinic("");
+    setFormLocations("");
     setFormPermissions(DEFAULT_PERMISSIONS);
     setFormStatus("active");
-    setFormPassword("retinix2026");
+    setFormPassword("");
     setShowPassword(false);
     setShowModal(true);
   };

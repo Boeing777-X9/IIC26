@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  Eye, Lock, User, ArrowRight, AlertCircle, Shield, EyeOff, Sparkles, Stethoscope
+  Eye, Lock, User, ArrowRight, AlertCircle, Shield, EyeOff, Stethoscope
 } from "lucide-react";
 import { loginWorkerApi } from "@/lib/store";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -39,12 +39,6 @@ export default function WorkerLoginPage() {
     } else {
       setErrorMsg(res.error || "Login failed. Please check your credentials.");
     }
-  };
-
-  const handleQuickFill = (workerId: string, pwd: string) => {
-    setLogin(workerId);
-    setPassword(pwd);
-    setErrorMsg(null);
   };
 
   return (
@@ -159,38 +153,8 @@ export default function WorkerLoginPage() {
               </Button>
             </form>
 
-            {/* Demo Quick Fill */}
-            <div className="mt-6 pt-5 border-t border-slate-100">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                  <Sparkles size={12} className="text-amber-500" />
-                  Demo Credentials
-                </span>
-                <span className="text-[11px] text-slate-400">Pre-seeded Screener</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => handleQuickFill("HW-101", "retinix2026")}
-                className="w-full text-left p-3 rounded-xl border border-emerald-200/80 bg-emerald-50/50 hover:bg-emerald-50 transition-colors group cursor-pointer"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-semibold text-slate-800 group-hover:text-emerald-800">
-                      Dr. Kavitha Selvam (CHC Tirunelveli)
-                    </p>
-                    <p className="text-[11px] text-slate-500 font-mono mt-0.5">
-                      ID: <span className="text-emerald-700 font-bold">HW-101</span> · PIN: <span className="text-slate-700 font-bold">retinix2026</span>
-                    </p>
-                  </div>
-                  <Badge variant="emerald" className="text-[10px] bg-white text-emerald-700 shadow-2xs">
-                    Quick Fill
-                  </Badge>
-                </div>
-              </button>
-            </div>
-
             {/* Navigation links */}
-            <div className="mt-6 flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-50">
+            <div className="mt-6 flex items-center justify-between text-xs text-slate-500 pt-4 border-t border-slate-100">
               <Link href="/" className="hover:text-slate-800 transition-colors font-medium">
                 ← Return to Retinix
               </Link>

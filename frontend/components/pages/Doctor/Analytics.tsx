@@ -57,7 +57,6 @@ export default function Analytics() {
           {!mounted ? (
             <div className="h-64 flex items-center justify-center text-slate-400 text-sm">Loading analytics...</div>
           ) : (
-
           <div className="grid lg:grid-cols-3 gap-5">
             {/* Volume */}
             <div className="lg:col-span-2 bg-white border border-slate-100 rounded-xl p-5">

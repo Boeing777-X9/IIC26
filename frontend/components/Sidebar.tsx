@@ -5,25 +5,21 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Eye, LayoutDashboard, UserPlus, Users, History, Send, BarChart2,
-  Settings, LogOut, Stethoscope, ClipboardList, ChevronRight, Shield, SwitchCamera
+  Settings, LogOut, Stethoscope, ClipboardList, Shield, SwitchCamera
 } from "lucide-react";
 import { getActiveWorker, getWorkers, setActiveWorker, Worker, DEFAULT_WORKER } from "@/lib/store";
 
 type Role = "worker" | "doctor";
 
-interface NavItem {
-  to: string;
-  icon: React.ReactNode;
-  label: string;
-}
+interface NavItem { to: string; icon: React.ReactNode; label: string; }
 
 const workerNav: NavItem[] = [
-  { to: "/health-worker", icon: <LayoutDashboard size={16} />, label: "Overview" },
-  { to: "/health-worker/screening/new", icon: <UserPlus size={16} />, label: "New Screening" },
-  { to: "/health-worker/patients", icon: <Users size={16} />, label: "Patients" },
-  { to: "/health-worker/history", icon: <History size={16} />, label: "Screening History" },
-  { to: "/health-worker/referrals", icon: <Send size={16} />, label: "Referrals" },
-  { to: "/health-worker/settings", icon: <Settings size={16} />, label: "Settings" },
+  { to: "/health-worker", icon: <LayoutDashboard size={15} />, label: "Overview" },
+  { to: "/health-worker/screening/new", icon: <UserPlus size={15} />, label: "New Screening" },
+  { to: "/health-worker/patients", icon: <Users size={15} />, label: "Patients" },
+  { to: "/health-worker/history", icon: <History size={15} />, label: "Screening History" },
+  { to: "/health-worker/referrals", icon: <Send size={15} />, label: "Referrals" },
+  { to: "/health-worker/settings", icon: <Settings size={15} />, label: "Settings" },
 ];
 
 const doctorNav: NavItem[] = [
@@ -37,11 +33,7 @@ const doctorNav: NavItem[] = [
   { to: "/doctor/settings", icon: <Settings size={16} />, label: "Settings" },
 ];
 
-interface Props {
-  role: Role;
-}
-
-export default function Sidebar({ role }: Props) {
+export default function Sidebar({ role }: { role: Role }) {
   const router = useRouter();
   const pathname = usePathname();
   const [activeWorker, setActiveWorkerState] = useState<Worker>(DEFAULT_WORKER);
@@ -103,15 +95,14 @@ export default function Sidebar({ role }: Props) {
               <li key={item.to}>
                 <Link
                   href={item.to}
-                  className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-all ${
+                  className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition-all ${
                     isActive
-                      ? "bg-emerald-50 text-emerald-700 font-medium"
-                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                      ? "bg-emerald-500 text-white shadow-sm shadow-emerald-200 font-medium"
+                      : "text-slate-500 hover:bg-emerald-50 hover:text-emerald-800"
                   }`}
                 >
-                  <span className={isActive ? "text-emerald-600" : "text-slate-400"}>{item.icon}</span>
-                  <span>{item.label}</span>
-                  {isActive && <ChevronRight size={12} className="ml-auto text-emerald-500" />}
+                  <span className={isActive ? "text-white" : "text-slate-400"}>{item.icon}</span>
+                  <span className="text-[13px]">{item.label}</span>
                 </Link>
               </li>
             );

@@ -105,7 +105,6 @@ export default function Landing() {
             <a href="#how-it-works" className="hover:text-emerald-700 transition-colors">How it works</a>
             <a href="#demo" className="hover:text-emerald-700 transition-colors">Interactive Demo</a>
             <a href="#platform" className="hover:text-emerald-700 transition-colors">Portals</a>
-            <button onClick={() => navigate("/themes")} className="hover:text-emerald-700 transition-colors">Themes</button>
             <div className="flex items-center gap-1.5 text-xs text-slate-500 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               <span>MongoDB Atlas Connected</span>

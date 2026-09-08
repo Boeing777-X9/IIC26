@@ -8,6 +8,9 @@ interface RetinalImageProps {
   animated?: boolean;
   scanAnimate?: boolean;
   risk?: "low" | "moderate" | "high";
+  src?: string | null;
+  heatmapSrc?: string | null;
+  overlaySrc?: string | null;
 }
 
 export default function RetinalImage({
@@ -16,6 +19,9 @@ export default function RetinalImage({
   animated = false,
   scanAnimate = false,
   risk = "high",
+  src = null,
+  heatmapSrc = null,
+  overlaySrc = null,
 }: RetinalImageProps) {
   const [scanY, setScanY] = useState(0);
   const [heatOpacity, setHeatOpacity] = useState(0);
@@ -30,6 +36,37 @@ export default function RetinalImage({
     }, 30);
     return () => clearInterval(interval);
   }, [scanAnimate]);
+
+  // If real image sources are provided from model inference
+  const activeImgSrc =
+    mode === "heatmap" && heatmapSrc
+      ? heatmapSrc
+      : mode === "overlay" && overlaySrc
+      ? overlaySrc
+      : src;
+
+  if (activeImgSrc && activeImgSrc !== "demo") {
+    return (
+      <div
+        className="relative overflow-hidden flex items-center justify-center bg-black"
+        style={{ width: size, height: size, borderRadius: "50%" }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={activeImgSrc}
+          alt={`Retinal view (${mode})`}
+          className="w-full h-full object-cover select-none"
+        />
+        {scanAnimate && (
+          <div
+            className="absolute left-0 right-0 h-0.5 bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] pointer-events-none"
+            style={{ top: `${scanY}%` }}
+          />
+        )}
+        <div className="absolute inset-0 rounded-full border-[10px] border-black/40 pointer-events-none" />
+      </div>
+    );
+  }
 
   const heatColor = risk === "high" ? "rgba(239,68,68,0.65)" : risk === "moderate" ? "rgba(245,158,11,0.55)" : "rgba(16,185,129,0.45)";
   const heatColor2 = risk === "high" ? "rgba(239,68,68,0.4)" : risk === "moderate" ? "rgba(245,158,11,0.35)" : "rgba(16,185,129,0.3)";

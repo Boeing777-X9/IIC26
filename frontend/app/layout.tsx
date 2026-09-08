@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "RetinaGrid — Distributed Retinal Screening & Tele-Triage Platform",
+  title: "Retinix — Distributed Retinal Screening & Tele-Triage Platform",
   description: "Explainable AI-assisted screening for diabetic retinopathy in rural healthcare camps.",
 };
 

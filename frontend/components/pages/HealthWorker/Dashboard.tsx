@@ -1,19 +1,28 @@
 "use client";
+
+import { useState, useEffect } from "react";
 import { useNavigate } from "@/lib/navigation";
-import { Eye, Send, AlertCircle, Clock, Plus, ArrowRight, ChevronRight, TrendingUp, Zap } from "lucide-react";
+import {
+  Eye, Send, AlertCircle, Clock, Plus, ArrowRight, ChevronRight,
+  Shield, Zap
+} from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import Topbar from "@/components/Topbar";
 import StatCard from "@/components/StatCard";
 import RiskBadge from "@/components/RiskBadge";
 import RetinalImage from "@/components/RetinalImage";
-import { getScreenings, getPatient, getReferrals } from "@/lib/store";
+import {
+  getScreenings, getPatient, getReferrals, getActiveWorker, DEFAULT_WORKER,
+  fetchScreeningsApi, fetchReferralsApi, fetchPatientsApi,
+  Screening, Referral, Worker
+} from "@/lib/store";
 
-function ReferralStatusBadge({ status }: { status: string | null }) {
-  if (!status) return <span className="text-xs text-slate-300">—</span>;
+function ReferralStatusBadge({ status }: { status: string | null | undefined }) {
+  if (!status) return <span className="text-xs text-slate-400">—</span>;
   const map: Record<string, { label: string; cls: string }> = {
     pending:       { label: "Pending",      cls: "text-amber-700 bg-amber-50 border border-amber-200" },
     viewed:        { label: "Viewed",       cls: "text-blue-700 bg-blue-50 border border-blue-200" },
-    "under-review":{ label: "Under Review", cls: "text-violet-700 bg-violet-50 border border-violet-200" },
+    "under-review":{ label: "Under Review", cls: "text-indigo-700 bg-indigo-50 border border-indigo-200" },
     reviewed:      { label: "Reviewed",     cls: "text-emerald-700 bg-emerald-50 border border-emerald-200" },
     "follow-up":   { label: "Follow-up",    cls: "text-orange-700 bg-orange-50 border border-orange-200" },
   };
@@ -23,148 +32,216 @@ function ReferralStatusBadge({ status }: { status: string | null }) {
 
 export default function WorkerDashboard() {
   const navigate = useNavigate();
-  const screenings = getScreenings();
-  const referrals = getReferrals();
+  const [mounted, setMounted] = useState(false);
+  const [activeWorker, setActiveWorkerState] = useState<Worker>(DEFAULT_WORKER);
+  const [screenings, setScreenings] = useState<Screening[]>([]);
+  const [referrals, setReferrals] = useState<Referral[]>([]);
+  const [patients, setPatients] = useState<any[]>([]);
+
+  useEffect(() => {
+    setMounted(true);
+    setActiveWorkerState(getActiveWorker());
+    setScreenings(getScreenings());
+    setReferrals(getReferrals());
+    fetchScreeningsApi().then(setScreenings);
+    fetchReferralsApi().then(setReferrals);
+    fetchPatientsApi().then(setPatients);
+  }, []);
+
   const today = new Date().toISOString().split("T")[0];
-  const todayCount = screenings.filter(s => s.date === today).length + 4;
+  const todayCount = screenings.filter(s => s.date === today).length;
   const referralCount = referrals.filter(r => ["pending", "viewed"].includes(r.status)).length;
   const highRisk = screenings.filter(s => s.risk === "high").length;
   const pending = referrals.filter(r => r.status === "pending").length;
+
+  const perms = activeWorker.permissions || {};
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: "#f0fdf8" }}>
       <Sidebar role="worker" />
       <div className="flex flex-col flex-1 overflow-hidden">
-        <Topbar title="Overview" subtitle="CHC Tirunelveli · Demo prototype" role="worker" />
+        <Topbar
+          title="Healthcare Worker Portal"
+          subtitle={`${activeWorker.name} · ${activeWorker.clinic}`}
+          role="worker"
+        />
         <main className="flex-1 overflow-y-auto p-6 space-y-5">
 
-          {/* Hero welcome strip */}
-          <div className="relative overflow-hidden rounded-2xl p-6 flex items-center justify-between"
-            style={{ background: "linear-gradient(135deg, #065f46 0%, #10b981 100%)" }}>
-            <div className="absolute right-0 top-0 w-64 h-64 rounded-full opacity-10" style={{ background: "white", transform: "translate(30%, -30%)" }} />
-            <div className="absolute right-20 bottom-0 w-32 h-32 rounded-full opacity-10" style={{ background: "white", transform: "translateY(40%)" }} />
-            <div className="relative z-10">
-              <p className="text-emerald-200 text-[11px] font-bold tracking-widest uppercase mb-1">Healthcare Worker · CHC Tirunelveli</p>
-              <h2 className="text-white text-xl font-bold mb-1">Priya Venkat</h2>
-              <p className="text-emerald-100 text-sm">You have <strong className="text-white">{pending} referral{pending !== 1 ? "s" : ""}</strong> awaiting specialist review</p>
+          {/* Active Worker Permissions Badge Card */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-sm shrink-0 border border-emerald-100">
+                {activeWorker.name.split(" ").map(n => n[0]).join("")}
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-slate-900 text-sm">{activeWorker.name}</span>
+                  <span className="text-[11px] font-mono text-slate-400 font-medium">({activeWorker.id})</span>
+                  <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-medium">
+                    {activeWorker.role_title}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 mt-1 text-xs text-slate-500 flex-wrap">
+                  <span className="font-medium text-slate-700">{activeWorker.clinic}</span>
+                  <span>·</span>
+                  <span className="flex items-center gap-1 text-[11px]">
+                    <Shield size={11} className="text-emerald-600" />
+                    Permissions:
+                  </span>
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${perms.can_screen ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"}`}>
+                    {perms.can_screen ? "✓ Screen" : "✗ Screen"}
+                  </span>
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${perms.can_refer ? "bg-blue-50 text-blue-700" : "bg-red-50 text-red-600"}`}>
+                    {perms.can_refer ? "✓ Refer" : "✗ Refer"}
+                  </span>
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${perms.can_register_patients ? "bg-slate-100 text-slate-700" : "bg-slate-100 text-slate-400"}`}>
+                    {perms.can_register_patients ? "✓ Register" : "✗ Register"}
+                  </span>
+                </div>
+              </div>
             </div>
-            <div className="relative z-10 flex gap-3">
-              <button onClick={() => navigate("/health-worker/screening/new")}
-                className="flex items-center gap-2 bg-white text-emerald-700 px-4 py-2.5 rounded-xl font-semibold text-sm hover:bg-emerald-50 transition-colors shadow-lg">
-                <Plus size={15} /> New Screening
+
+            {perms.can_screen && (
+              <button
+                onClick={() => navigate("/health-worker/screening/new")}
+                className="inline-flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-semibold hover:bg-emerald-700 transition-colors shadow-sm shrink-0"
+              >
+                <Plus size={14} /> New Screening
               </button>
-              <button onClick={() => navigate("/health-worker/referrals")}
-                className="flex items-center gap-2 bg-emerald-700/40 text-white border border-emerald-400/30 px-4 py-2.5 rounded-xl font-semibold text-sm hover:bg-emerald-700/60 transition-colors">
-                <Send size={15} /> Referrals
-              </button>
-            </div>
+            )}
           </div>
 
           {/* Stats */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard label="Screenings today" value={todayCount} icon={<Eye size={18} />} accent="teal" trend="+2 vs yesterday" trendUp />
-            <StatCard label="Requiring referral" value={referralCount} icon={<Send size={18} />} accent="amber" />
-            <StatCard label="High-risk cases" value={highRisk} icon={<AlertCircle size={18} />} accent="red" />
-            <StatCard label="Pending reviews" value={pending} icon={<Clock size={18} />} accent="slate" />
+            <StatCard label="Screenings today" value={mounted ? todayCount : 0} icon={<Eye size={18} />} sub="Recorded in database" accent="teal" />
+            <StatCard label="Requiring referral" value={mounted ? referralCount : 0} icon={<Send size={18} />} sub="Active referrals" accent="amber" />
+            <StatCard label="High-risk cases" value={mounted ? highRisk : 0} icon={<AlertCircle size={18} />} sub="Needs specialist" accent="red" />
+            <StatCard label="Pending reviews" value={mounted ? pending : 0} icon={<Clock size={18} />} sub="In doctor queue" accent="slate" />
           </div>
 
           <div className="grid lg:grid-cols-3 gap-5">
-            {/* Recent screenings table */}
-            <div className="lg:col-span-2 bg-white rounded-2xl overflow-hidden border" style={{ borderColor: "#d1fae5" }}>
-              <div className="px-5 py-4 flex items-center justify-between border-b" style={{ borderColor: "#d1fae5" }}>
+            {/* Recent Screenings Table */}
+            <div className="lg:col-span-2 bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
+              <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
                 <div>
-                  <h2 className="font-bold text-[#0d2e24] text-sm">Recent Screenings</h2>
-                  <p className="text-xs text-slate-400 mt-0.5">Latest AI-assisted screening results</p>
+                  <h2 className="font-semibold text-slate-800">Recorded Retinal Screenings</h2>
+                  <p className="text-xs text-slate-400">Clinical metrics saved in database</p>
                 </div>
-                <button onClick={() => navigate("/health-worker/history")} className="text-xs text-emerald-600 hover:text-emerald-700 flex items-center gap-1 font-semibold">
+                <button onClick={() => navigate("/health-worker/history")} className="text-xs text-emerald-600 hover:text-emerald-700 flex items-center gap-1 font-medium">
                   View all <ChevronRight size={12} />
                 </button>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr style={{ borderBottom: "1px solid #f0fdf8", background: "#f9fffe" }}>
-                      {["Patient ID", "Date", "Eye", "Confidence", "Risk", "Referral", ""].map(h => (
-                        <th key={h} className="text-left px-4 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wide whitespace-nowrap">{h}</th>
+                    <tr className="border-b border-slate-100 bg-slate-50/50 text-slate-400 text-xs font-medium uppercase tracking-wider">
+                      {["Patient ID", "Date", "Eye", "Stage", "AI Confidence", "Risk", "Referral Status", "Action"].map(h => (
+                        <th key={h} className="text-left px-4 py-3 whitespace-nowrap">{h}</th>
                       ))}
                     </tr>
                   </thead>
-                  <tbody>
-                    {screenings.slice(0, 6).map((s, i) => (
-                      <tr key={s.id} className="hover:bg-emerald-50/40 transition-colors" style={{ borderBottom: i < 5 ? "1px solid #f0fdf8" : "none" }}>
-                        <td className="px-4 py-3 font-mono text-xs font-semibold text-[#0d2e24]">{s.patientId}</td>
-                        <td className="px-4 py-3 text-slate-500 text-xs whitespace-nowrap">{s.date}</td>
-                        <td className="px-4 py-3 text-slate-500 text-xs capitalize">{s.eye}</td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            <div className="h-1.5 w-16 bg-slate-100 rounded-full overflow-hidden">
-                              <div className="h-full bg-emerald-400 rounded-full" style={{ width: `${s.confidence}%` }} />
+                  <tbody className="divide-y divide-slate-50">
+                    {screenings.slice(0, 8).map(s => {
+                      const pId = s.patient_id || (s as any).patientId;
+                      const patient = patients.find(p => p.id === pId) || getPatient(pId);
+                      return (
+                        <tr key={s.id} className="hover:bg-slate-50/50 transition-colors">
+                          <td className="px-4 py-3.5 font-mono text-xs text-slate-700 font-semibold">
+                            {pId}
+                            {patient?.name && <span className="block font-sans text-[11px] text-slate-400 font-normal">{patient.name}</span>}
+                          </td>
+                          <td className="px-4 py-3.5 text-slate-600 whitespace-nowrap text-xs">{s.date}</td>
+                          <td className="px-4 py-3.5 text-slate-500 capitalize text-xs">{s.eye}</td>
+                          <td className="px-4 py-3.5 text-xs text-slate-700 font-medium">
+                            {s.title || (s as any).stageTitle || s.stage}
+                          </td>
+                          <td className="px-4 py-3.5">
+                            <div className="flex items-center gap-2">
+                              <div className="h-1.5 w-16 bg-slate-100 rounded-full overflow-hidden">
+                                <div className="h-full bg-emerald-400 rounded-full" style={{ width: `${s.confidence}%` }} />
+                              </div>
+                              <span className="text-xs font-mono text-slate-600">{s.confidence}%</span>
                             </div>
-                            <span className="text-xs font-mono text-slate-500">{s.confidence}%</span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3"><RiskBadge risk={s.risk} size="sm" /></td>
-                        <td className="px-4 py-3"><ReferralStatusBadge status={s.referralStatus} /></td>
-                        <td className="px-4 py-3">
-                          <button onClick={() => navigate("/health-worker/screening/new")} className="text-emerald-500 hover:text-emerald-700">
-                            <ArrowRight size={14} />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                          <td className="px-4 py-3.5">
+                            <RiskBadge risk={s.risk} size="sm" />
+                          </td>
+                          <td className="px-4 py-3.5">
+                            <ReferralStatusBadge status={s.referral_status || (s as any).referralStatus} />
+                          </td>
+                          <td className="px-4 py-3.5">
+                            <button
+                              onClick={() => navigate("/health-worker/screening/new")}
+                              className="text-xs text-emerald-600 hover:text-emerald-700 font-medium flex items-center gap-1"
+                            >
+                              New <ArrowRight size={11} />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
+                {screenings.length === 0 && (
+                  <div className="text-center py-12 text-slate-400 text-sm">
+                    No screenings recorded yet. Upload a fundus scan to start.
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Right column */}
+            {/* Right column: Quick AI Screening Card + Risk Distribution */}
             <div className="space-y-4">
-              {/* Quick AI screening card */}
-              <div className="bg-white rounded-2xl border overflow-hidden cursor-pointer hover:shadow-md transition-all group"
-                style={{ borderColor: "#d1fae5" }}
-                onClick={() => navigate("/health-worker/screening/new")}>
+              <div
+                className="bg-white rounded-2xl border border-slate-100 overflow-hidden cursor-pointer hover:shadow-md transition-all group"
+                onClick={() => navigate("/health-worker/screening/new")}
+              >
                 <div className="p-5">
                   <div className="flex items-center gap-2 mb-3">
                     <div className="w-8 h-8 rounded-xl bg-emerald-500 flex items-center justify-center">
                       <Zap size={15} className="text-white" />
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-[#0d2e24]">New AI Screening</p>
-                      <p className="text-[10px] text-slate-400">Upload & analyze instantly</p>
+                      <p className="text-xs font-bold text-slate-800">New AI Screening</p>
+                      <p className="text-[10px] text-slate-400">Inference with Grad-CAM visualization</p>
                     </div>
                   </div>
-                  <div className="bg-slate-900 rounded-xl overflow-hidden flex items-center justify-center" style={{ height: 120 }}>
+                  <div className="bg-slate-900 rounded-xl overflow-hidden flex items-center justify-center mb-3" style={{ height: 120 }}>
                     <RetinalImage mode="overlay" size={110} risk="high" />
                   </div>
-                  <button className="mt-3 w-full bg-emerald-500 text-white py-2 rounded-xl text-sm font-semibold hover:bg-emerald-600 transition-colors flex items-center justify-center gap-2">
+                  <button className="w-full bg-emerald-500 text-white py-2 rounded-xl text-sm font-semibold hover:bg-emerald-600 transition-colors flex items-center justify-center gap-2">
                     <Plus size={14} /> Start Screening
                   </button>
                 </div>
               </div>
 
-              {/* Risk summary */}
-              <div className="bg-white rounded-2xl border p-4" style={{ borderColor: "#d1fae5" }}>
-                <p className="text-xs font-bold text-[#0d2e24] uppercase tracking-wide mb-3">Risk Distribution</p>
+              <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
+                <p className="text-xs font-bold text-slate-800 uppercase tracking-wide mb-3">Risk Distribution</p>
                 <div className="space-y-2.5">
                   {[
-                    { label: "Low Risk", count: screenings.filter(s => s.risk === "low").length, color: "bg-emerald-400", pct: 50 },
-                    { label: "Moderate", count: screenings.filter(s => s.risk === "moderate").length, color: "bg-amber-400", pct: 33 },
-                    { label: "High Risk", count: screenings.filter(s => s.risk === "high").length, color: "bg-red-400", pct: 33 },
-                  ].map(r => (
-                    <div key={r.label}>
-                      <div className="flex justify-between text-xs mb-1">
-                        <span className="text-slate-600 font-medium">{r.label}</span>
-                        <span className="font-mono text-slate-400">{r.count}</span>
+                    { label: "Low Risk", count: screenings.filter(s => s.risk === "low").length, color: "bg-emerald-400" },
+                    { label: "Moderate", count: screenings.filter(s => s.risk === "moderate").length, color: "bg-amber-400" },
+                    { label: "High Risk", count: screenings.filter(s => s.risk === "high").length, color: "bg-red-400" },
+                  ].map(r => {
+                    const total = screenings.length || 1;
+                    const pct = Math.round((r.count / total) * 100);
+                    return (
+                      <div key={r.label}>
+                        <div className="flex justify-between text-xs mb-1">
+                          <span className="text-slate-600 font-medium">{r.label}</span>
+                          <span className="font-mono text-slate-400">{r.count} ({pct}%)</span>
+                        </div>
+                        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                          <div className={`h-full ${r.color} rounded-full transition-all`} style={{ width: `${pct}%` }} />
+                        </div>
                       </div>
-                      <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                        <div className={`h-full ${r.color} rounded-full transition-all`} style={{ width: `${r.pct}%` }} />
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>
           </div>
+
         </main>
       </div>
     </div>

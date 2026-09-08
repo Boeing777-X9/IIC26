@@ -52,3 +52,10 @@ htmlcov/
 *.onnx
 *.h5
 *.pkl
+
+# Datasets & Training Data
+dataset/
+datasets/
+**/dataset/
+**/datasets/
+

@@ -75,3 +75,10 @@ yarn-error.log*
 *.pth
 *.onnx
 *.h5
+
+# Datasets & Training Data
+dataset/
+datasets/
+**/dataset/
+**/datasets/
+

@@ -16,7 +16,6 @@ import {
   fetchPatientsApi,
   getActiveWorker,
   generateId,
-  API_BASE,
   ProbabilityItem,
   Patient,
   Worker,
@@ -574,13 +573,13 @@ export default function NewScreening() {
       formData.append("eye", eye);
 
       setProgress(35);
-      setCurrentStep("Transmitting fundus image to screening engine...");
+      setCurrentStep("Transmitting to FastAPI backend (localhost:8000)...");
 
       const progressTimer = setInterval(() => {
         setProgress(prev => (prev < 85 ? prev + Math.floor(Math.random() * 8 + 3) : prev));
       }, 250);
 
-      const response = await fetch(`${API_BASE}/predict`, {
+      const response = await fetch("http://localhost:8000/api/predict", {
         method: "POST",
         body: formData,
       });
